@@ -4,6 +4,6 @@ TheBoss Odoo modules
 Dependencies
 ------------
 * Odoo repositories
-     * [odoo-extra](https://github.com/odoo/odoo-extra)
+     * [odoo](https://github.com/odoo/odoo)
 * Dependencies
      * Python
