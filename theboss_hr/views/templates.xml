@@ -1,0 +1,15 @@
+<odoo>
+    <data>
+        <template id="report_print_hr_doc">
+            <t t-call="report.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="theboss_hr.document_print"/>
+                </t>
+            </t>
+        </template>
+        
+        <template id="document_print">
+          <t t-esc="doc.print_document(res_ids)"/>
+        </template>
+    </data>
+</odoo>

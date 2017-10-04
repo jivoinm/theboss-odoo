@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Email Template Preview -->
+        <record model="ir.ui.view" id="document_template_preview_form">
+            <field name="name">document_template.preview.form</field>
+            <field name="model">document_template.preview</field>
+            <field name="arch" type="xml">
+                <form string="Email Preview">
+                    <field name="model_id" invisible="1"/>
+                    <h3>Preview of <field name="name" readonly="1" nolabel="1" class="oe_inline"/></h3>
+                    Choose an example <field name="model_id" class="oe_inline" readonly="1"/> record:
+                    <field name="res_id" class="oe_inline" style="margin-left: 8px;"/>
+                    <group>
+                        <field name="scheduled_date" readonly="1"
+                                attrs="{'invisible':[('scheduled_date','=',False)]}"/>
+                    </group>
+                    <field name="body_html" widget="html" readonly="1"
+                            nolabel="1" options='{"safe": True}'/>
+                     <footer>
+                        <button name="print_template" string="Print" type="object" icon="gtk-print"/>
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="document_template_preview" model="ir.actions.act_window">
+            <field name="name">Template Preview</field>
+            <field name="res_model">document_template.preview</field>
+            <field name="src_model">hr.document</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="document_template_preview_form"/>
+            <field name="target">new</field>
+            <field name="context">{'template_id':active_id}</field>
+        </record>
+<!--         
+        <record id="print_template" model="ir.actions.server">
+            <field name="name">Print template</field>
+            <field name="model_id" ref="theboss_hr_hr_document"/>
+            <field name="state">code</field>
+            <field name="code">action = self.print_template()</field>
+        </record> -->
+    </data>
+</odoo>

@@ -1,0 +1,27 @@
+<odoo>
+    <data>
+      <record id="campaign_workflow" model="workflow">
+          <field name="name">campaign.workflow</field>
+          <field name="osv">agro.campaign</field>
+          <field name="on_create">True</field>
+      </record>
+      <record id="draft_activity" model="workflow.activity">
+          <field name="wkf_id" ref="campaign_workflow"/>
+          <field name="flow_start">True</field>
+          <field name="name">Draft</field>
+          <field name="kind">dummy</field>
+      </record>
+      <record id="approved_activity" model="workflow.activity">
+          <field name="wkf_id" ref="campaign_workflow"/>
+          <field name="flow_stop">True</field>
+          <field name="name">Approved</field>
+          <field name="kind">function</field>
+          <field name="action">approve_campaign()</field>
+      </record>
+      <record id="trans_draft_approved" model="workflow.transition">
+          <field name="act_from" ref="draft_activity"/>
+          <field name="act_to" ref="approved_activity"/>
+          <field name="signal">approve_button</field>
+      </record>
+    </data>
+</odoo>

@@ -1,0 +1,106 @@
+<odoo>
+    <data>
+
+    	<!-- Templates applicants -->
+	    <record id="email_template_data_applicant_aplicare" model="mail.template">
+	        <field name="name">Applicant: Aplicare</field>
+	        <field name="subject">Aplicare</field>
+	        <field name="email_to">${object.email_from}</field>
+	        <field name="partner_to">${object.partner_id and object.partner_id.id or ''}</field>
+	        <field name="lang">${object.partner_id and object.partner_id.lang or ''}</field>
+	        <field name="model_id" ref="hr_recruitment.model_hr_applicant"/>
+	        <field name="user_signature" eval="False"/>
+	        <field name="body_html"><![CDATA[
+	<p>Buna ${object.partner_name or 'applicant'},</p>
+	<p>Va multumim pentru aplicare<br />
+	Va contactam pentru un interviu daca este cazul</p>
+	<p>If you have any questions, please let us know.</p>
+	<p>Best regards,</p>]]></field>
+	    </record>
+	    <record id="email_template_data_applicant_respins" model="mail.template">
+	        <field name="name">Applicant: Respins</field>
+	        <field name="subject">Respins</field>
+	        <field name="email_to">${object.email_from}</field>
+	        <field name="partner_to">${object.partner_id and object.partner_id.id or ''}</field>
+	        <field name="lang">${object.partner_id and object.partner_id.lang or ''}</field>
+	        <field name="model_id" ref="hr_recruitment.model_hr_applicant"/>
+	        <field name="user_signature" eval="False"/>
+	        <field name="body_html"><![CDATA[
+	<p>Buna ${object.partner_name or 'applicant'},</p>
+	<p>Va multumim pentru aplicare<br />
+	Nu ne trebuie pe tine...</p>
+	<p>If you have any questions, please let us know.</p>
+	<p>Best regards,</p>]]></field>
+	    </record>
+	     <record id="email_template_data_applicant_angajat" model="mail.template">
+	        <field name="name">Applicant: Welcome new employee</field>
+	        <field name="subject">Welcome ${object.name} </field>
+	        <field name="model_id" ref="hr.model_hr_employee"/>
+	        <field name="body_html"><![CDATA[
+	<p>Dear all,</p>
+	<p>I’m very pleased to announce that <strong> ${object.name} </strong> will be
+	joining us as a ${object.job_id.name}
+	%if object.department_id:
+	    in ${object.department_id.name}.
+	%endif
+	.</p>
+	<p>Please welcome him/her and help him/her finding his/her marks.</p>]]></field>
+	    </record>
+		 <record id="recruitment_stage_aplicare" model="hr.recruitment.stage">
+			<field name="name">Aplicare</field>
+			<field name="sequence">1</field>
+			<field name="template_id" ref="email_template_data_applicant_aplicare"/>
+		</record>
+    	 <record id="recruitment_stage_selectare" model="hr.recruitment.stage">
+			<field name="name">Selectare</field>
+			<field name="sequence">2</field>
+		</record>
+    	 <record id="recruitment_stage_interview_tehnic" model="hr.recruitment.stage">
+			<field name="name">Interviu tehnic</field>
+			<field name="sequence">3</field>
+		</record>
+    	 <record id="recruitment_stage_interview_resurse_umane" model="hr.recruitment.stage">
+			<field name="name">Interviu resurse umane</field>
+			<field name="sequence">4</field>
+		</record>
+    	 <record id="recruitment_stage_oferta" model="hr.recruitment.stage">
+			<field name="name">Oferta angajare</field>
+			<field name="sequence">5</field>
+		</record>
+    	 <record id="recruitment_stage_angajat" model="hr.recruitment.stage">
+			<field name="name">Angajat</field>
+			<field name="fold">True</field>
+			<field name="sequence">6</field>
+			<field name="template_id" ref="email_template_data_applicant_angajat"/>
+		</record> 
+	   	 <record id="recruitment_stage_respins" model="hr.recruitment.stage">
+			<field name="name">Respins</field>
+			<field name="fold">True</field>
+			<field name="sequence">7</field>
+		</record>
+		 <record id="department_manager_restrict_rule" model="ir.rule">
+			<field name="name">Leave Restrict for Department Manger</field>
+			<field name="model_id" ref="hr.model_hr_employee" />
+			<field name="active">true</field>
+			<field name="perm_read">true</field>
+			<field name="perm_create">true</field>
+			<field name="perm_write">true</field>
+			<field name="perm_delete">true</field>
+			<field name="domain_force">['|', ('employee_id.user_id', '=', user.id), ('employee_id.parent_id', '=', user.id)]</field>
+		</record>
+		 <record id="applicants_older_than_job" model="ir.cron">
+	        <field name="name">Aplication remonder job</field>
+	        <field name="active" eval="True" />
+	        <field name="user_id" ref="base.user_root" />
+	        <field name="interval_number">1</field>
+	        <field name="interval_type">days</field>
+	        <field name="numbercall">-1</field>
+	        <field name="doal">1</field>
+	        <!--<field name="nextcall" >2016-12-31 23:59:59</field>-->
+	        <field name="model" eval="'hr.applicant'" />
+	        <field name="function" eval="'applicants_older_than_job'" />
+	        <field name="args" eval="()" />
+	        <field name="priority" eval="1" />
+	     </record>
+    </data>
+</odoo>
