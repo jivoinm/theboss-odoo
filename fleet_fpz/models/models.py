@@ -138,7 +138,7 @@ class foaie_de_parcurs(models.Model):
 
     joja_ant_rezervor = fields.Float('Joja ant. rezervoar')
     joja_rezervor = fields.Float('Joja rezervoar')
-    consum_comb = fields.Float('Consum normat', strore=True, compute="_compute_cn")
+    consum_comb = fields.Float('Consum normat litri', strore=True, compute="_compute_cn")
     consum_comb_diference = fields.Float('Diferente', strore=True)
 
     km_urbani_buc = fields.Integer('Bucuresti', store=True)
@@ -320,6 +320,7 @@ class foaie_de_parcurs(models.Model):
                 record.km_echiv_incarcat = sum(drum.km for drum in record.road_categories if drum.incarcat)
                 record.km_echiv_gol = sum(drum.km for drum in record.road_categories if not drum.incarcat)
 
+    @api.model
     def create(self, vals):
         if not vals:
             vals = {}
