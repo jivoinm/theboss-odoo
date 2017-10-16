@@ -316,7 +316,7 @@ class HRDocument(models.Model):
         """ Render the given template text, replace mako expressions ``${expr}``
         with the result of evaluating these expressions with an evaluation
         context containing:
-         - ``user``: browse_record of the current user
+         - ``user``: Model of the current user
          - ``object``: record of the document record this mail is related to
          - ``context``: the context passed to the mail composition wizard
         :param str template_txt: the template text to render
@@ -324,7 +324,7 @@ class HRDocument(models.Model):
         :param int res_ids: list of ids of document records those mails are related to.
         """
         multi_mode = True
-        if isinstance(res_ids, (int, long)):
+        if isinstance(res_ids, pycompat.integer_types):
             multi_mode = False
             res_ids = [res_ids]
 
@@ -339,7 +339,7 @@ class HRDocument(models.Model):
             return multi_mode and results or results[res_ids[0]]
 
         # prepare template variables
-        records = self.env[model].browse(filter(None, res_ids))  # filter to avoid browsing [None]
+        records = self.env[model].browse(it for it in res_ids if it)  # filter to avoid browsing [None]
         res_to_rec = dict.fromkeys(res_ids, None)
         for record in records:
             res_to_rec[record.id] = record
@@ -350,7 +350,7 @@ class HRDocument(models.Model):
             'user': self.env.user,
             'ctx': self._context,  # context kw would clash with mako internals
         }
-        for res_id, record in res_to_rec.iteritems():
+        for res_id, record in res_to_rec.items():
             variables['object'] = record
             try:
                 render_result = template.render(variables)
@@ -362,7 +362,7 @@ class HRDocument(models.Model):
             results[res_id] = render_result
 
         if post_process:
-            for res_id, result in results.iteritems():
+            for res_id, result in results.items():
                 results[res_id] = self.render_post_process(result)
 
         return multi_mode and results or results[res_ids[0]]
@@ -370,7 +370,7 @@ class HRDocument(models.Model):
     @api.multi
     def get_template(self, res_ids):
         multi_mode = True
-        if isinstance(res_ids, (int, long)):
+        if isinstance(res_ids, pycompat.integer_types):
             res_ids = [res_ids]
             multi_mode = False
 
@@ -383,7 +383,7 @@ class HRDocument(models.Model):
         self.ensure_one()
 
         langs = self.render_template(self.lang, self.model, res_ids)
-        for res_id, lang in langs.iteritems():
+        for res_id, lang in langs.items():
             if lang:
                 template = self.with_context(lang=lang)
             else:
@@ -408,7 +408,7 @@ class HRDocument(models.Model):
         """
         self.ensure_one()
         multi_mode = True
-        if isinstance(res_ids, (int, long)):
+        if isinstance(res_ids, (int)):
             res_ids = [res_ids]
             multi_mode = False
         if fields is None:
@@ -418,11 +418,11 @@ class HRDocument(models.Model):
 
         # templates: res_id -> template; template -> res_ids
         templates_to_res_ids = {}
-        for res_id, template in res_ids_to_templates.iteritems():
+        for res_id, template in res_ids_to_templates.items():
             templates_to_res_ids.setdefault(template, []).append(res_id)
 
         results = dict()
-        for template, template_res_ids in templates_to_res_ids.iteritems():
+        for template, template_res_ids in templates_to_res_ids.items():
             Template = self.env['hr.document']
             # generate fields value for all res_ids linked to the current template
             if template.lang:
@@ -432,7 +432,7 @@ class HRDocument(models.Model):
                 generated_field_values = Template.render_template(
                     getattr(template, field), template.model, template_res_ids,
                     post_process=(field == 'body_html'))
-                for res_id, field_value in generated_field_values.iteritems():
+                for res_id, field_value in generated_field_values.items():
                     results.setdefault(res_id, dict())[field] = field_value
             # compute recipients
             if any(field in fields for field in ['email_to', 'partner_to', 'email_cc']):
