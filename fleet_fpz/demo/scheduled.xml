@@ -1,6 +1,7 @@
+<?xml version="1.0"?>
 <odoo>
     <data>
-      <record id="alarme_cars_import" model="ir.cron">
+      <!-- <record id="alarme_cars_import" model="ir.cron">
         <field name="name">Alarme Cars Import</field>
         <field name="active" eval="True" />
         <field name="user_id" ref="base.user_root" />
@@ -8,8 +9,7 @@
         <field name="interval_type">days</field>
         <field name="numbercall">-1</field>
         <field name="doal">1</field>
-        <!--<field name="nextcall" >2016-12-31 23:59:59</field>-->
-        <field name="model" eval="'fleet_fpz.car_import'" />
+        <field name="model_id" ref="fleet_fpz_car_import"/>
         <field name="function" eval="'import_cars_alarme'" />
         <field name="args" eval="()" />
         <field name="priority" eval="5" />
@@ -22,8 +22,7 @@
         <field name="interval_type">days</field>
         <field name="numbercall">-1</field>
         <field name="doal">1</field>
-        <!--<field name="nextcall" >2016-12-31 23:59:59</field>-->
-        <field name="model" eval="'fleet_fpz.car_import'" />
+        <field name="model_id" ref="fleet_fpz_car_import"/>
         <field name="function" eval="'import_cars_fms'" />
         <field name="args" eval="()" />
         <field name="priority" eval="6" />
@@ -36,8 +35,7 @@
         <field name="interval_type">days</field>
         <field name="numbercall">-1</field>
         <field name="doal">1</field>
-        <!--<field name="nextcall" >2016-12-31 23:59:59</field>-->
-        <field name="model" eval="'fleet_fpz.car_import'" />
+        <field name="model_id" ref="fleet_fpz_car_import"/>>
         <field name="function" eval="'import_gps_alarme'" />
         <field name="args" eval="()" />
         <field name="priority" eval="7" />
@@ -50,11 +48,10 @@
         <field name="interval_type">days</field>
         <field name="numbercall">-1</field>
         <field name="doal">1</field>
-        <!--<field name="nextcall" >2016-12-31 23:59:59</field>-->
-        <field name="model" eval="'fleet_fpz.car_import'" />
+        <field name="model_id" ref="fleet_fpz_car_import"/>
         <field name="function" eval="'import_gps_fms'" />
         <field name="args" eval="()" />
         <field name="priority" eval="8" />
-      </record>
+      </record> -->
     </data>
 </odoo>

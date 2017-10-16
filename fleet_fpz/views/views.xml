@@ -268,12 +268,12 @@
         </field>
     </record>
 
-    <record id="action_open_invoice" model="ir.values">
+    <!-- <record id="action_open_invoice" model="ir.values">
       <field eval="'client_action_multi'" name="key2"/>
       <field eval="'fleet_fpz.foaie_de_parcurs'" name="model"/>
       <field name="name">Aproba</field>
       <field eval="'ir.actions.server,%d'%approve_item_action" name="value"/>
-    </record>
+    </record> -->
     <!-- menu categories -->
 
 

@@ -329,7 +329,7 @@ class foaie_de_parcurs(models.Model):
             record.km_urbani_judet_echiv = (float(record.km_urbani_judet) / 100) * (record.km_urbani_judet_coef)
             record.km_urbani_alte_echiv = (float(record.km_urbani_alte) / 100) * (record.km_urbani_alte_coef)
             u = record.km_urbani_buc_echiv + record.km_urbani_judet_echiv + record.km_urbani_alte_echiv
-            print "buc=%s, judet=%s, alte=%s, U=%s" % (record.km_urbani_buc_echiv, record.km_urbani_judet_echiv, record.km_urbani_alte_echiv, u)
+            
             pe = record.km_echiv_total + t + u
             cm = record.vehicle_id.cm if record.vehicle_id.cm else self._compute_cm()
 

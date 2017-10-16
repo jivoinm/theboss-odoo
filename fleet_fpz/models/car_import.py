@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
-from urllib2 import Request, urlopen
+#from urllib2 import Request, urlopen
+#from urllib.request import urlopen
+
 from dateutil import tz
 import requests, json, logging, datetime, os.path
 import sys, traceback
@@ -9,8 +11,8 @@ from dateutil.parser import parse as parse_date
 
 _logger = logging.getLogger(__name__)
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 class car_import(models.AbstractModel):
     _name = "fleet_fpz.car_import"
 
@@ -182,7 +184,7 @@ class car_import(models.AbstractModel):
                 data['nr_porniri_opriri'] = data['nr_porniri_opriri'] + 1 if 'nr_porniri_opriri' in data else 1
             alert_prev = alert
             fuelLevel = alert['fuelLevel']
-        print "carId=%s|Comb total=%s lit|De=%s ori|total dist=%s" % (carId, fuelAdded, len(fueled_alerts), dist)
+        #print "carId=%s|Comb total=%s lit|De=%s ori|total dist=%s" % (carId, fuelAdded, len(fueled_alerts), dist)
         data['fueled'] = fuelAdded
 
     @api.model
@@ -213,7 +215,7 @@ class car_import(models.AbstractModel):
                 try:
                     response_body = requests.post(url, params={'api-version': '1.0'}, headers=headers, data=values)
                     payload = Payload(response_body.content)
-                    print "%s|TotalKM=%s|WorkTime=%s|Idle=%s" % (payload.licensePlate, payload.totalDistance, payload.workTimeSpanInSeconds, payload.idleTimeSpanInSeconds)
+                    #print "%s|TotalKM=%s|WorkTime=%s|Idle=%s" % (payload.licensePlate, payload.totalDistance, payload.workTimeSpanInSeconds, payload.idleTimeSpanInSeconds)
                     data = {}
                     self.initArray(data, ['buc', 'mun', 'alte', 'D1', 'D2','D3','D4','D6', 'trasee', 'trasee_gps', 'timp_local', 'timp_inter', 'timp_inc_desc'])
                     for segment in payload.segments:
@@ -257,7 +259,7 @@ class car_import(models.AbstractModel):
                     'startDateTime': start_date_time,
                     'endDateTime': end_date_time,
                     }
-                    print "query_params=%s" % query_params
+                    #print "query_params=%s" % query_params
                     response_body = requests.post(url, params = query_params)
 
                     car_tracks = json.loads(response_body.text)
@@ -299,7 +301,7 @@ class car_import(models.AbstractModel):
         mun_km = sum(item.dist for item in data['mun'])
         alte_km = sum(item.dist for item in data['alte'])
 
-        print "local_time=%s|interurban=%s|WorkTime=%s|timp_inc_desc=%s|nr_porniri_opriri=%s" % (local_time, inter_time, total_work_time, timp_inc_desc, nr_porniri_opriri)
+        #print "local_time=%s|interurban=%s|WorkTime=%s|timp_inc_desc=%s|nr_porniri_opriri=%s" % (local_time, inter_time, total_work_time, timp_inc_desc, nr_porniri_opriri)
         vehicle = self.env['fleet.vehicle'].search([['license_plate', '=', licensePlate]], limit=1)
         if vehicle.id:
             foaie_de_parcurs = self.env['fleet_fpz.foaie_de_parcurs'].search([
@@ -330,9 +332,9 @@ class car_import(models.AbstractModel):
             'fuel_pump': data['fueled'] if 'fueled' in data else 0
             })
 
-            print "found vehicle %s - %s" % (vehicle.name, foaie_de_parcurs.numar)
+            #print "found vehicle %s - %s" % (vehicle.name, foaie_de_parcurs.numar)
         else:
-            print "not found vehicle %s" % (licensePlate)
+            "not found vehicle {0:s}".format(licensePlate)
     def get_road_categories(self, road_categories):
         road_category_ids = [(6, 0,  [self.env['fleet_fpz.parcurs_drum'].create({'km': cat['total'], 'categorie_drum_id': \
             self.env['fleet_fpz.categorie_drum'].search([['coeficient', '=', cat['name']]], limit=1).id}).id for cat in road_categories])]
@@ -352,7 +354,7 @@ class car_import(models.AbstractModel):
             'dist': traseu['dist'],
             'viteza': traseu['viteza'],
             }).id for traseu in trasee]
-        print "array_trasee %s" % array_trasee
+        #print "array_trasee %s" % array_trasee
         trasee_ids = [(6, 0, array_trasee)]
 
         return trasee_ids
@@ -362,10 +364,10 @@ class car_import(models.AbstractModel):
         #calculate speed when distance > 1km
 
         if not speed and dist > 1:
-            print "end_date=%s - start_date=%s = %s sec" % (end_date, start_date, (end_date - start_date).seconds)
+            #print "end_date=%s - start_date=%s = %s sec" % (end_date, start_date, (end_date - start_date).seconds)
             speed = dist / (float((end_date - start_date).seconds) / 3600)
-            print "calculated speed = %s km/h" % (speed)
-        print "address_start=%s address_stop=%s city_start=%s city_stop=%s|speed=%s|dist=%s|timp=%s" % (address_start, address_stop, city_start, city_stop,speed, dist,(end_date - start_date).seconds)
+            #print "calculated speed = %s km/h" % (speed)
+        #print "address_start=%s address_stop=%s city_start=%s city_stop=%s|speed=%s|dist=%s|timp=%s" % (address_start, address_stop, city_start, city_stop,speed, dist,(end_date - start_date).seconds)
         if speed > 5:
             if speed < 25 and dist>10 and (city_start=='-' or city_start=='' or city_end=='-' or city_end==''):
                 data['D4'].append(dist)
@@ -473,7 +475,7 @@ class car_import(models.AbstractModel):
         m, s = divmod(seconds, 60)
         h, m = divmod(m, 60)
         hours = float(h + (float(m) / 60))
-        print "%s:%s = %s" % (h, m, hours)
+        #print "%s:%s = %s" % (h, m, hours)
         return hours
     def initArray(self, data, properties):
         for prop in properties:
