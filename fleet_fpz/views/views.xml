@@ -2,11 +2,21 @@
   <data>
     <!-- explicit list view definition -->
     <!-- Inherit Form view -->
-    <record id="fleet_vehicle_view_form" model="ir.ui.view">
+    <record id="fleet_fpz_fleet_vehicle_view_form" model="ir.ui.view">
       <field name="name">fleet.vehicle.form</field>
       <field name="model">fleet.vehicle</field>
       <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
       <field name="arch" type="xml">
+          <xpath expr="//button" position="after">
+            <button name="return_my_action_to_open"
+                type="object"
+                class="oe_stat_button"
+                icon="fa-tint"
+                context="{'xml_id':'fleet_vehicle_log_oil_action'}"
+                help="show the oil logs for this vehicle" >
+                <field name="oil_logs_count" widget="statinfo" string="Oil"/>
+            </button>
+          </xpath>
           <!-- Add your fields or attributes here -->
           <xpath expr="//group" position="after">
                  <group string="Sporuri pe masina" col="2">
@@ -42,6 +52,8 @@
         </xpath>
       </field>
     </record>
+
+   
 
     <record model='ir.ui.view' id='fleet_fpz_foaie_de_parcurs_form'>
         <field name="name">fleet_fpz.foaie_de_parcurs.form</field>
@@ -172,8 +184,8 @@
                       <group class="oe_subtotal_footer">
                           <field name="fuel_total"/>
                           <field name="consum_comb"/>
-                          <field name="km_echiv_sporuri"/>
-                          <field name="km_echiv_total"/>
+                          <field name="km_echiv_sporuri" attrs="{'readonly': True}"/>
+                          <field name="km_echiv_total" attrs="{'readonly': True}"/>
                           <field name="driver_cost" class="oe_subtotal_footer_separator"/>
                       </group>
                   </group>
@@ -276,9 +288,111 @@
       <field eval="'ir.actions.server,%d'%approve_item_action" name="value"/>
     </record>
     <!-- menu categories -->
-
-
     <menuitem action="fleet_fpz_foaie_de_parcurs_act" parent="fleet.fleet_vehicles"
       id="fleet_fpz_foaie_de_parcurs_act_menu"/> 
+
+      <record id='fleet_vehicle_log_oil_view_form' model='ir.ui.view'>
+            <field name="name">fleet.vehicle.log.oil.form</field>
+            <field name="model">fleet.vehicle.log.oil</field>
+            <field name="arch" type="xml">
+                <form string="Fuel Logs">
+                    <sheet>
+                        <group>
+                            <group string="Vehicle Details">
+                                <field name="vehicle_id"/>
+                            </group>
+                            <group string="Refueling Details">
+                                <field name="liter"/>
+                                <field name="price_per_liter"/>
+                                <field name="amount"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Odometer Details">
+                                <label for="odometer"/>
+                                <div class="o_row">
+                                    <field name="odometer"/>
+                                    <field name="odometer_unit"/>
+                                </div>
+                            </group>
+                            <group string="Additional Details">
+                                <field name="date" />
+                                <field name="purchaser_id" />
+                                <field name="inv_ref" />
+                                <field name="vendor_id" context="{'default_supplier': True}"/>
+                            </group>
+                        </group>
+                        <field name="notes" placeholder="Write here any other information"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id='fleet_vehicle_log_oil_view_tree' model='ir.ui.view'>
+            <field name="name">fleet.vehicle.log.oil.tree</field>
+            <field name="model">fleet.vehicle.log.oil</field>
+            <field name="arch" type="xml">
+                <tree string="Fuel Logs">
+                    <field name="date" />
+                    <field name="vehicle_id" />
+                    <field name="odometer" invisible="1"/>
+                    <field name="odometer_unit" invisible="1"/>
+                    <field name="purchaser_id" />
+                    <field name="inv_ref" invisible="1"/>
+                    <field name="vendor_id" invisible="1"/>
+                    <field name="liter" />
+                    <field name="price_per_liter" invisible="1"/>
+                    <field name="amount" sum="Price"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id='fleet_vehicle_log_oil_view_search' model='ir.ui.view'>
+            <field name="name">fleet.vehicle.log.oil.search</field>
+            <field name="model">fleet.vehicle.log.oil</field>
+            <field name="arch" type="xml">
+                <search string="Vehicles Fuel Logs" >
+                    <field name="vehicle_id" />
+                    <field name="date"/>
+                    <field name="purchaser_id" />
+                    <field name="liter" />
+                    <field name="amount" sum="Price"/>
+                    <group expand="0" string="Group By">
+                        <filter name="groupby_vehicle" context="{'group_by' : 'vehicle_id'}" string="Vehicle"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="fleet_vehicle_log_oil_view_graph" model="ir.ui.view">
+           <field name="name">fleet.vehicle.log.oil.graph</field>
+           <field name="model">fleet.vehicle.log.oil</field>
+           <field name="arch" type="xml">
+                <graph string="Fuel Costs Per Month">
+                    <field name="vehicle_id" type="row"/>
+                    <field name="cost_amount" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id='fleet_vehicle_log_oil_action' model='ir.actions.act_window'>
+            <field name="name">Vehicles Oil Logs</field>
+            <field name="res_model">fleet.vehicle.log.oil</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,graph</field>
+            <field name="context">{"search_default_groupby_vehicle" : True}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to create a new oil log.
+              </p><p>
+                Here you can add refuelling entries for all vehicles.  You can
+                also filter logs of a particular vehicle using the search
+                field.
+              </p>
+            </field>
+        </record>
+
+        <menuitem action="fleet_vehicle_log_oil_action" parent="fleet.fleet_vehicles" id="fleet_vehicle_log_oil_menu"/>
+
   </data>
 </odoo>
