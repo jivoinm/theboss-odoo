@@ -8,13 +8,33 @@
       <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
       <field name="arch" type="xml">
           <xpath expr="//button" position="after">
+            <field name="show_stock" invisible="1"/>
+            <button name="return_action_to_open" attrs="{'invisible':[('show_stock', '=', False)]}"
+                type="object"
+                class="oe_stat_button"
+                icon="fa-home"
+                context="{'xml_id':'fleet_vehicle_log_fuel_action', 'show_consumed': True}"
+                domain="[('date', '>=', ((context_today()-datetime.timedelta(days=30)).strftime('%Y-%m-%d')))]"
+                help="show the oil logs for this vehicle" >
+                <field name="in_stock" widget="statinfo" string="In Stock"/>
+            </button>
             <button name="return_my_action_to_open"
                 type="object"
                 class="oe_stat_button"
                 icon="fa-tint"
                 context="{'xml_id':'fleet_vehicle_log_oil_action'}"
+                domain="[('date', '>=', ((context_today()-datetime.timedelta(days=30)).strftime('%Y-%m-%d')))]"
                 help="show the oil logs for this vehicle" >
                 <field name="oil_logs_count" widget="statinfo" string="Oil"/>
+            </button>
+            <button name="return_my_action_to_open"
+                type="object"
+                class="oe_stat_button"
+                icon="fa-file"
+                context="{'xml_id':'fleet_fpz_foaie_de_parcurs_act'}"
+                domain="[('date', '>=', ((context_today()-datetime.timedelta(days=30)).strftime('%Y-%m-%d')))]"
+                help="Foiile de parcurs in ultimele 30 zile">
+                <span>FAZ</span>
             </button>
           </xpath>
           <!-- Add your fields or attributes here -->
@@ -36,6 +56,88 @@
                    </group>
                  </group>
              </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <div class="oe_form_box_info">
+                  <span class="o_left">Cost pe m3:<field name="cost_m_cub" widget="statinfo" nolabel="1"/></span>   
+                  <span>_____</span>   
+                  <span class="o_right">Cost pe km:<field name="cost_km" widget="statinfo" nolabel="1"/></span>      
+                </div>
+            </xpath>
+      </field>
+    </record>
+    <!-- Inherit Form view -->
+    <record id="fleet_fpz_fleet_vehicle_make_view_form" model="ir.ui.view">
+      <field name="name">fleet.vehicle.model.brand.form</field>
+      <field name="model">fleet.vehicle.model.brand</field>
+      <field name="inherit_id" ref="fleet.fleet_vehicle_model_brand_view_form"/>
+      <field name="arch" type="xml">
+          <xpath expr="//group" position="replace">
+            <group col="2">
+                   <group>
+                      <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                      </div>
+                   </group>
+                   <group>
+                      <div class="oe_button_box" name="button_box">
+                        <field name="image_medium" widget="image" class="oe_avatar"/>
+                      </div>
+                   </group>
+            </group>
+            <group>
+                <field name="used_for_tanking"/>
+            </group>
+          </xpath>
+      </field>
+    </record>
+
+     <!-- Inherit Form view -->
+    <record id="fleet_fpz_fleet_vehicle_fuel_view_form" model="ir.ui.view">
+      <field name="name">fleet.vehicle.log.fuel.form</field>
+      <field name="model">fleet.vehicle.log.fuel</field>
+      <field name="inherit_id" ref="fleet.fleet_vehicle_log_fuel_view_form"/>
+      <field name="arch" type="xml">
+          <xpath expr="//field[@name='vehicle_id']" position="after">
+            <field name="from_vehicle_id"/>
+          </xpath>
+      </field>
+    </record>
+    <record id="fleet_fpz_fleet_vehicle_view_tree" model="ir.ui.view">
+      <field name="name">fleet.vehicle.log.fuel.tree</field>
+      <field name="model">fleet.vehicle</field>
+      <field name="inherit_id" ref="fleet.fleet_vehicle_view_tree"/>
+      <field name="arch" type="xml">
+          <xpath expr="//tree" position="inside">
+            <field name="cost_m_cub"/>
+            <field name="cost_km"/>
+          </xpath>
+      </field>
+    </record>
+
+    <record id="fleet_fpz_fleet_vehicle_fuel_view_tree" model="ir.ui.view">
+      <field name="name">fleet.vehicle.log.fuel.tree</field>
+      <field name="model">fleet.vehicle.log.fuel</field>
+      <field name="inherit_id" ref="fleet.fleet_vehicle_log_fuel_view_tree"/>
+      <field name="arch" type="xml">
+          <xpath expr="//tree" position="replace">
+             <tree string="Fuel Logs" colors="red:from_vehicle_id">
+                    <field name="date" />
+                    <field name="vehicle_id" />
+                    <field name="from_vehicle_id"/>
+                    <field name="odometer" invisible="1"/>
+                    <field name="odometer_unit" invisible="1"/>
+                    <field name="purchaser_id" />
+                    <field name="inv_ref" invisible="1"/>
+                    <field name="vendor_id" invisible="1"/>
+                    <field name="liter" sum="Liter"/>
+                    <field name="liter_stock" sum="Liters in stock"/>
+                    <field name="price_per_liter" invisible="1"/>
+                    <field name="amount" sum="Price"/>
+                </tree>
+          </xpath>
       </field>
     </record>
 
@@ -46,14 +148,14 @@
       <field name="arch" type="xml">
         <xpath expr="//div[contains(@class, 'oe_kanban_details')]" position="after">
           <div class="o_project_kanban_manage">
-               <a class="o_kanban_manage_toggle_button o_left" href="#">More <i class="fa fa-caret-down"/></a>
-               <a type="object" name="toggle_favorite" class="o_right"><i t-attf-class="oe_inline fa o_dashboard_star #{record.status == 'm' ? 'fa-star' : 'fa-star-o'}" title="Status"/></a>
+               <span class="o_left">Cost pe m3 <field name="cost_m_cub"/></span>              
+           </div>
+           <div class="o_project_kanban_manage">
+               <span class="o_left">Cost pe km <field name="cost_km"/></span> 
            </div>
         </xpath>
       </field>
     </record>
-
-   
 
     <record model='ir.ui.view' id='fleet_fpz_foaie_de_parcurs_form'>
         <field name="name">fleet_fpz.foaie_de_parcurs.form</field>
@@ -61,8 +163,8 @@
         <field name="arch" type="xml">
             <form string="Foaie de parcurs">
               <header>
-                <button name="approve_button" state="approved" type="object" class="oe_stat_button" icon="fa-check"
-                  attrs="{'invisible': [('state','!=','draft')]}"></button>
+                <!-- <button name="approve_button" state="approved" type="object" class="oe_stat_button" icon="fa-check"
+                  attrs="{'invisible': [('state','!=','draft')]}"></button> -->
 
           	    <!--This will create the statusbar, thanks to the widget. -->
           	    <field name="state" widget="statusbar"/>
@@ -95,17 +197,13 @@
                       <notebook colspan="4">
                         <page string="Calcul consum">
                           <group col="3">
-                            <group string="Alimentare combustibil litri:">
-                              <field name="fuel_pump"/>
-                              <field name="fuel_bcf"/>
-                              <field name="fuel_advance"/>
+                            <group string="Transport">
+                              <field name="fuel_total"/>
                               <field name="gm"/>
+                              <field name="gm_m3"/>
                             </group>
                             <group string="Index contor kilometric:">
-                              <field name="index_km_start"/>
-                              <field name="index_km_stop"/>
-                              <field name="index_km_total" attrs="{'readonly': False}"/>
-                              <field name="km_unknown"/>
+                              <field name="index_km_total"/>
                             </group>
                             <group string="Calcul consum">
                               <field name="joja_ant_rezervor"/>
@@ -182,7 +280,6 @@
                          </page>
                       </notebook>
                       <group class="oe_subtotal_footer">
-                          <field name="fuel_total"/>
                           <field name="consum_comb"/>
                           <field name="km_echiv_sporuri" attrs="{'readonly': True}"/>
                           <field name="km_echiv_total" attrs="{'readonly': True}"/>

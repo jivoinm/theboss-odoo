@@ -1,6 +1,5 @@
 <odoo>
     <data>
-
           <record id="object0" model="fleet_fpz.categorie_drum">
             <field name="name">I (M)</field>
             <field name="coeficient">D1</field>
@@ -37,6 +36,5 @@
             <field name="valoare">1.6</field>
             <field name="descriere">Toate celelalte drumuri cu o stare de viabilitate sau care prezinta declivitati ce nu permit circulatia cu viteze mai mari de 15 km/ora pe toata lungimea lor.</field>
           </record>
-    
     </data>
 </odoo>

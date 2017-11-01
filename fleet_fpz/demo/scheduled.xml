@@ -56,5 +56,19 @@
         <field name="args" eval="()" />
         <field name="priority" eval="8" />
       </record>
+       <record id="calculate_vehicle_cost" model="ir.cron">
+        <field name="name">Calculate vehicle cost</field>
+        <field name="active" eval="True" />
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doal">1</field>
+        <!--<field name="nextcall" >2016-12-31 23:59:59</field>-->
+        <field name="model" eval="'fleet.vehicle'" />
+        <field name="function" eval="'calculate_vehicle_cost'" />
+        <field name="args" eval="()" />
+        <field name="priority" eval="9" />
+      </record>
     </data>
 </odoo>

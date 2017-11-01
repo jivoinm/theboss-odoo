@@ -301,7 +301,7 @@ class car_import(models.AbstractModel):
 
         print "local_time=%s|interurban=%s|WorkTime=%s|timp_inc_desc=%s|nr_porniri_opriri=%s" % (local_time, inter_time, total_work_time, timp_inc_desc, nr_porniri_opriri)
         vehicle = self.env['fleet.vehicle'].search([['license_plate', '=', licensePlate]], limit=1)
-        if vehicle.id:
+        if vehicle.id and totalDistance > 0:
             foaie_de_parcurs = self.env['fleet_fpz.foaie_de_parcurs'].search([
             ['vehicle_id', '=', vehicle.id],
             ['date', '=', faz_date.strftime("%Y-%m-%d")]
@@ -326,8 +326,7 @@ class car_import(models.AbstractModel):
             'timp_local': self.sec_to_hours(local_time),
             'timp_inter': self.sec_to_hours(inter_time),
             'total_work_time': self.sec_to_hours(total_work_time),
-            'timp_inc_desc': self.sec_to_hours(timp_inc_desc),
-            'fuel_pump': data['fueled'] if 'fueled' in data else 0
+            'timp_inc_desc': self.sec_to_hours(timp_inc_desc)
             })
 
             print "found vehicle %s - %s" % (vehicle.name, foaie_de_parcurs.numar)

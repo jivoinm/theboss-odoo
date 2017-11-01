@@ -6,6 +6,15 @@ from dateutil.relativedelta import relativedelta
 
 _logger = logging.getLogger(__name__)
 
+class fleet_vehicle_make(models.Model):
+    
+    _inherit = ['fleet.vehicle.model.brand']
+    
+    used_for_tanking = fields.Boolean(
+        string=u'Is used for tanking?'
+    )
+    
+    
 class fleet_vehicle(models.Model):
     _name = 'fleet.vehicle' # optional
     _inherit = 'fleet.vehicle'
@@ -19,15 +28,17 @@ class fleet_vehicle(models.Model):
     spor_judet_cu_remorca = fields.Integer('Spor municipii/judet cu remorca')
     spor_alte = fields.Integer('Spor celalte orase')
     spor_alte_cu_remorca = fields.Integer('Spor celalte orase cu remorca')
-    status = fields.Boolean('Status', compute="_compute_status")
     tank_capacity = fields.Integer()
     external_carid = fields.Integer()
     sarcina_utila_nominala = fields.Float('Sarcina utila nominala (tone)')
 
     oil_logs_count = fields.Integer(compute="_compute_count_all", string='Oil Logs')
-    def _compute_status(self):
-        return 'm'
-
+    in_stock = fields.Float(string=u'In Stock', compute='_compute_count_all')
+    show_stock = fields.Boolean(compute='_compute_count_all')
+    
+    cost_km = fields.Float('Cost pe KM')
+    cost_m_cub = fields.Float('Cost pe m3')
+    
     def _compute_count_all(self):
         Odometer = self.env['fleet.vehicle.odometer']
         LogFuel = self.env['fleet.vehicle.log.fuel']
@@ -35,7 +46,14 @@ class fleet_vehicle(models.Model):
         LogService = self.env['fleet.vehicle.log.services']
         LogContract = self.env['fleet.vehicle.log.contract']
         Cost = self.env['fleet.vehicle.cost']
+        
         for record in self:
+            record.show_stock = record.model_id.brand_id.used_for_tanking
+            if record.show_stock:
+                total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id)]))
+                total_consumed = sum(log.liter for log in LogFuel.search([('from_vehicle_id', '=', record.id)]))
+                record.in_stock = total_fueled - total_consumed
+
             record.odometer_count = Odometer.search_count([('vehicle_id', '=', record.id)])
             record.fuel_logs_count = LogFuel.search_count([('vehicle_id', '=', record.id)])
             record.oil_logs_count = LogOil.search_count([('vehicle_id', '=', record.id)])
@@ -43,6 +61,25 @@ class fleet_vehicle(models.Model):
             record.contract_count = LogContract.search_count([('vehicle_id', '=', record.id)])
             record.cost_count = Cost.search_count([('vehicle_id', '=', record.id), ('parent_id', '=', False)])
 
+    @api.multi
+    def return_action_to_open(self):
+        """ This opens the xml view specified in xml_id for the current vehicle """
+        self.ensure_one()
+        xml_id = self.env.context.get('xml_id')
+        show_consumed = self.env.context.get('show_consumed')
+        if xml_id:
+            res = self.env['ir.actions.act_window'].for_xml_id('fleet', xml_id)
+            if self.model_id.brand_id.used_for_tanking and show_consumed:
+                domain = ['|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
+            else:
+                domain = [('vehicle_id', '=', self.id)]
+
+            res.update(
+                context=dict(self.env.context, default_vehicle_id=self.id, group_by=False),
+                domain=domain
+            )
+            return res
+        return False
     @api.multi
     def return_my_action_to_open(self):
         """ This opens the xml view specified in xml_id for the current vehicle """
@@ -57,11 +94,52 @@ class fleet_vehicle(models.Model):
             return res
         return False
 
+    @api.model
+    def calculate_vehicle_cost(self):
+        Vehicle = self.env['fleet.vehicle']
+        LogFuel = self.env['fleet.vehicle.log.fuel']
+        FoaieParcurs = self.env['fleet_fpz.foaie_de_parcurs']
+
+        date_start = datetime.date.today() - datetime.timedelta(days=30)
+        price_per_liter = self.env['ir.values'].search([('name', '=', 'price_per_liter')])
+        price_per_m3 = self.env['ir.values'].search([('name', '=', 'price_per_m3')])
+        for record in Vehicle.search([('active', '=', True)]):
+            total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id), ('date', '>=', date_start)]))
+            total_gm_m3 = sum(foaie.gm_m3 for foaie in FoaieParcurs.search([('vehicle_id', '=', record.id), ('date', '>=', date_start)]))
+            total_km = sum(foaie.index_km_total for foaie in FoaieParcurs.search([('vehicle_id', '=', record.id), ('date', '>=', date_start)]))            
+            if price_per_m3 and total_fueled>0 and total_gm_m3>0:
+                record.cost_m_cub = round(total_gm_m3 * float(price_per_liter[0].value_unpickle) / total_fueled, 2)
+                print("vehicle=%s, cost_m3=%s, total_gm_m3=%s, price per liter=%s, total_fueled=%s" % (record.name, record.cost_m_cub, total_gm_m3, price_per_liter[0].value_unpickle, total_fueled))
+            if total_km>0 and price_per_liter and total_fueled>0:
+                record.cost_km = round(total_km * float(price_per_liter[0].value_unpickle) / total_fueled, 2)
+                print("vehicle=%s, cost_km=%s, total_km=%s, price per liter=%s, total_fueled=%s" % (record.name, record.cost_km, total_km, price_per_liter[0].value_unpickle, total_fueled))
+            record.write({})
+
 class fleet_vehicle_cost(models.Model):
     _inherit = ['fleet.vehicle.cost']
     cost_type = fields.Selection([('contract', 'Contract'), ('services', 'Services'), ('fuel', 'Fuel'), ('oil', 'Oil'), ('other', 'Other')],
         'Category of the cost', default="other", help='For internal purpose only', required=True)
 
+class fleet_vehicle_log_fuel(models.Model):
+    
+    _inherit = ['fleet.vehicle.log.fuel']
+
+    from_vehicle_id = fields.Many2one('fleet.vehicle', 'From Vehicle', required=False, help='Vehicle from where was refueled', 
+    domain="[('model_id.brand_id.used_for_tanking','=', True)]",
+    )
+
+   
+    liter_stock = fields.Float(
+       string=u'Liters in stock', 
+       compute='_compute_liter_stock'
+    )
+    
+    #@api.depends('from_vehicle_id','liter')
+    def _compute_liter_stock(self):
+        for record in self:
+            
+            record.liter_stock = -record.liter if record.from_vehicle_id else record.liter
+    
 class fleet_vehicle_log_oil(models.Model):
     _name = 'fleet.vehicle.log.oil'
     _description = 'Oil log for vehicles'
@@ -230,15 +308,10 @@ class foaie_de_parcurs(models.Model):
     date = fields.Date('Data', required=True)
     driver_id = fields.Many2one('res.partner', 'Sofer')
     vehicle_id = fields.Many2one('fleet.vehicle', 'Masina', required=True)
-    fuel_pump = fields.Float('Pompa')
-    fuel_bcf = fields.Float('BCF')
-    fuel_advance = fields.Float('Avans')
-    fuel_total = fields.Float('Total combustibil', compute="_compute_total_fuel", store=True)
-    index_km_start = fields.Float('Plecare')
-    index_km_stop = fields.Float('Sosire')
-    index_km_total = fields.Float('Total parcurs', required=True, compute="_compute_total_km", store=True)
-    km_unknown = fields.Integer('Km necontorizati')
-    gm = fields.Float('Sarcina medie (Tone)')
+    fuel_total = fields.Float('Total combustibil')
+    index_km_total = fields.Float('Total parcurs', required=True)
+    gm = fields.Float('Transport (Tone)')
+    gm_m3 = fields.Float('Transport (m3)')
     road_categories = fields.One2many(
         string="Categorii drum",
         comodel_name="fleet_fpz.parcurs_drum",
@@ -259,12 +332,7 @@ class foaie_de_parcurs(models.Model):
     km_echiv_gol = fields.Float(string="Km echiv. gol", compute="_compute_echiv")
     km_echiv_sporuri = fields.Float(string="Km echiv. sporuri")
     km_echiv_total = fields.Float(string="Total km echiv.", compute='_compute_km_echiv_total')
-     
-    @api.depends('km_echiv_parcurs')
-    def _compute_km_echiv_total(self):
-        for record in self:
-            record.km_echiv_total = sum(drum.km_echivalent for drum in record.road_categories)
-
+    
     nr_porniri_opriri = fields.Integer(string="Nr porniri/opriri")
     timp_local = fields.Float(string="Localitate")
     timp_inter = fields.Float(string="Interurban")
@@ -298,6 +366,11 @@ class foaie_de_parcurs(models.Model):
     km_urbani_alte_echiv = fields.Float()
 
     total_km_echiv = fields.Float('Total Km echivalenti')
+   
+    @api.depends('km_echiv_parcurs')
+    def _compute_km_echiv_total(self):
+        for record in self:
+            record.km_echiv_total = sum(drum.km_echivalent for drum in record.road_categories)
 
     @api.multi
     def approve_selected(self):
@@ -344,24 +417,12 @@ class foaie_de_parcurs(models.Model):
                 record.km_de_specificat = record.index_km_total - sum(drum.km for drum in record.road_categories)
                 record.km_de_specificat = record.km_de_specificat if record.km_de_specificat >= 1 else 0
 
-    @api.depends('fuel_pump','fuel_bcf', 'fuel_advance')
-    def _compute_total_fuel(self):
-        for record in self:
-            if record.fuel_pump or record.fuel_bcf or record.fuel_advance:
-                record.fuel_total = record.fuel_pump + record.fuel_bcf + record.fuel_advance
-
-    @api.depends('index_km_stop','index_km_start')
-    def _compute_total_km(self):
-        for record in self:
-            if record.index_km_stop and record.index_km_start:
-                record.index_km_total = record.index_km_stop - record.index_km_start + record.km_unknown
-
     @api.depends('numar','vehicle_id')
     def _compute_name(self):
          for record in self:
             record.name = "%s / %s" % (record.numar, record.vehicle_id.license_plate)
 
-    @api.depends('joja_ant_rezervor','joja_rezervor','fuel_pump','km_echiv_parcurs', 'km_urbani_buc_cu_remorca', 'km_urbani_judet_cu_remorca', 'km_urbani_alte_cu_remorca', 'gm', 'km_urbani_buc', 'km_urbani_judet', 'km_urbani_alte')
+    @api.depends('joja_ant_rezervor','joja_rezervor','fuel_total','km_echiv_parcurs', 'km_urbani_buc_cu_remorca', 'km_urbani_judet_cu_remorca', 'km_urbani_alte_cu_remorca', 'gm', 'km_urbani_buc', 'km_urbani_judet', 'km_urbani_alte')
     def _compute_cn(self):
         for record in self:
             #Coeficientul de corectie "A" are valoarea 1,1 si se aplica de regula in perioada 1 decembrie - 15 martie.
