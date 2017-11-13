@@ -3,6 +3,8 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 import logging, datetime
 import json
+import base64
+import lxml.html
 
 _logger = logging.getLogger(__name__)
 
@@ -164,13 +166,18 @@ class TheBossApplicant(models.Model):
     stage_interview_id = fields.Many2one('theboss_hr.stage_interview', store=False, compute='_compute_stage_interview_id', string="Survey")
     response_id = fields.Many2one('survey.user_input', store=False, compute='_compute_response_id', string="Response")
     score = fields.Float(string=u'Score', store=False, compute='_compute_stage_score')
-    
+    attachment_ids = fields.One2many('ir.attachment', 'res_id', domain=[('res_model', '=', 'hr.applicant')], string='Attachments', ondelete='set null')
+
     # @api.onchange('stage_id')
     # def check_if_tasks_are_done(self):
-    #     return {
+    #     undone_tasks = self.env['mail.activity'].search([('res_id', '=', self.id)])
+    #     print("undone_tasks=%s, first=%s" % (undone_tasks, undone_tasks[0]))
+    #     if undone_tasks:
+    #         return {
     #                 #'domain': {'other_id': [('partner_id', '=', partner_id)]},
-    #                 'warning': {'title': "Warning", 'message': "What is this?"},
-    #            }
+    #                 'warning': {'title': "Warning", 'message': "Sunt activitati de finalizat, continuati?"},
+    #             }
+    #     return {}
     @api.depends('stage_id')
     def _compute_stage_interview_id(self):
         for record in self:
@@ -220,16 +227,37 @@ class TheBossApplicant(models.Model):
         else:
             return self.response_id.action_view_answers()
 
-
-# class TheBossMailActivity(models.Model):
-    
-#     _inherit = ['mail.activity']
-
-#     @api.depends('res_model', 'res_id')
-#     def _compute_res_name(self):
-#         for activity in self:
-#             print("_compute_res_name res_model=%s res_id=%s" % (activity.res_model, activity.res_id))
-#             res_name = self.env[activity.res_model].browse(activity.res_id).name_get()
-#             print(res_name)
-#             activity.res_name = res_name
+    @api.multi
+    def action_generate_documents(self):
+        self.ensure_one()
+        applicant_docs = self.env['hr.document'].search([('model', '=', 'hr.applicant')])
+        attachment_ids = []
+        for doc in applicant_docs:
+            values = doc.generate_document(self.id)
+            report_obj = self.env['ir.actions.report']
+            
+            IrConfig = self.env['ir.config_parameter'].sudo()
+            base_url = IrConfig.get_param('report.url') or IrConfig.get_param('web.base.url')
+            html = values['body']
+            layout = self.env['ir.ui.view'].browse(self.env['ir.ui.view'].get_view_id('web.minimal_layout'))
+            body = layout.render(dict(subst=True, body=html, base_url=base_url))
+            pdf_content = report_obj._run_wkhtmltopdf(
+                [body],
+            )
+            
+            result = base64.b64encode(pdf_content)
+            Attachment = self.env['ir.attachment'] 
+            file_name = doc.name + '_' +  datetime.datetime.now().strftime('%Y_%m_%d_%f')
+            attachment_data = {
+                'name': file_name,
+                'datas_fname': file_name + '.pdf',
+                'datas': result,
+                'type': 'binary',
+                'res_model': 'hr.applicant',
+                'res_id': self.id,
+            }
+            attachment_ids.append(Attachment.create(attachment_data).id)
+            
+        self.write({'attachment_ids': [(2, 0, attachment_ids)]})
+        return True
     

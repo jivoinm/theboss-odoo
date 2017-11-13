@@ -178,6 +178,16 @@
                         <field name="score" class="o_stat_text"/>
                     </div>
                 </button>
+                <button name="action_generate_documents"
+                    class="oe_stat_button"
+                    icon="fa-gears"
+                    type="object"
+                    help="Generate template documents"
+                   >
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Generate HR doc</span>
+                    </div>
+                </button>
             </xpath>
             <xpath expr="//field[@name='job_id']" position="before">
                 <field name="stage_interview_id" invisible="1"/>
