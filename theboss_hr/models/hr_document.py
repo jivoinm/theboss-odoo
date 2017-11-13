@@ -434,9 +434,6 @@ class HRDocument(models.Model):
                     post_process=(field == 'body_html'))
                 for res_id, field_value in generated_field_values.items():
                     results.setdefault(res_id, dict())[field] = field_value
-            # compute recipients
-            if any(field in fields for field in ['email_to', 'partner_to', 'email_cc']):
-                results = template.generate_recipients(results, template_res_ids)
             # update values for all res_ids
             for res_id in template_res_ids:
                 values = results[res_id]

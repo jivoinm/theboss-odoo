@@ -18,19 +18,21 @@
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
     'category': 'hr',
-    'version': '0.4',
+    'version': '0.5',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'google_drive', 'hr', 'hr_recruitment', 'hr_contract', 'hr_holidays', 'hr_recruitment_survey', 'hr_payroll_account', 'l10n_ro'],
+    'depends': ['base', 'google_drive', 'survey', 'hr', 'hr_recruitment', 'hr_contract', 'hr_holidays', 'hr_payroll_account', 'l10n_ro'],
 
     # always loaded
     'data': [
+        'security/hr_recruitment_survey_security.xml',
         'security/ir.model.access.csv',
         'views/document_template.xml',
         'views/document_template_preview.xml',
         'views/hr_document_view.xml',
         'views/hr_contract_view.xml',
         'views/hr_employee_view.xml',
+        'views/hr_job_stage_interview_view.xml',
         'views/res_company_view.xml',
         'views/views.xml',
         'views/templates.xml',
