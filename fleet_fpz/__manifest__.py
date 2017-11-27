@@ -27,8 +27,7 @@
         'views/faz_seq.xml',
         'views/views.xml',
         'views/templates.xml',
-        'demo/demo.xml',
-        'demo/scheduled.xml',
+        'data/data.xml',
     ],
     'css': ['static/css/my_css.css'],
     # only loaded in demonstration mode

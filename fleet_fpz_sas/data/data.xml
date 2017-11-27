@@ -1,0 +1,29 @@
+<odoo>
+    <data>
+        <record id="sas_login_object" model="ir.config_parameter">
+            <field name="key">sas_server.login</field>
+            <field name="value">myuser</field>
+            <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        </record>
+        <record id="sas_password_object" model="ir.config_parameter">
+            <field name="key">sas_server.password</field>
+            <field name="value">MyPa$$w0rd</field>
+            <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        </record>
+        <record id="sas_culture_object" model="ir.config_parameter">
+            <field name="key">sas_server.culture</field>
+            <field name="value">ro-RO</field>
+            <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        </record>
+        <record id="sas_version_object" model="ir.config_parameter">
+            <field name="key">sas_server.version</field>
+            <field name="value">1.0</field>
+            <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        </record>
+        <record id="sas_server_url_object" model="ir.config_parameter">
+            <field name="key">sas_server.server_url</field>
+            <field name="value">https://testsrv6.alarma.ro</field>
+            <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        </record>
+    </data>
+</odoo>
