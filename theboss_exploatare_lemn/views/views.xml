@@ -21,6 +21,7 @@
               <field name="total_cost_motorina" />
               <field name="total_litri_motorina" />
               <field name="cost_metru_cub" />
+              <field name="cost_pe_litru" />
           </tree>
        </field>
    </record>
@@ -54,6 +55,7 @@
                       </notebook>
                       <group class="oe_subtotal_footer">
                           <field name="cost_metru_cub" attrs="{'readonly': True}"/> %
+                          <field name="cost_pe_litru" attrs="{'readonly': True}"/> %
                           <field name="total_cost_productie" attrs="{'readonly': True}"/> RON
                           <field name="total_metri_cubi_productie" attrs="{'readonly': True}"/> m3
                           <field name="total_cost_motorina" attrs="{'readonly': True}"/> RON

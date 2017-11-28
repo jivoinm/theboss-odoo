@@ -36,9 +36,6 @@ class fleet_vehicle(models.Model):
     in_stock = fields.Float(string=u'In Stock', compute='_compute_count_all')
     show_stock = fields.Boolean(compute='_compute_count_all')
     
-    cost_km = fields.Float('Cost pe KM')
-    cost_m_cub = fields.Float('Cost pe m3')
-    
     def _compute_count_all(self):
         Odometer = self.env['fleet.vehicle.odometer']
         LogFuel = self.env['fleet.vehicle.log.fuel']
@@ -46,12 +43,13 @@ class fleet_vehicle(models.Model):
         LogService = self.env['fleet.vehicle.log.services']
         LogContract = self.env['fleet.vehicle.log.contract']
         Cost = self.env['fleet.vehicle.cost']
-        
+        first_of_month = datetime.date.today().replace(day=1)
         for record in self:
             record.show_stock = record.model_id.brand_id.used_for_tanking
             if record.show_stock:
-                total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id)]))
-                total_consumed = sum(log.liter for log in LogFuel.search([('from_vehicle_id', '=', record.id)]))
+                print("first_of_month=%s", first_of_month)
+                total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id), ('date', '>=', first_of_month)]))
+                total_consumed = sum(log.liter for log in LogFuel.search([('from_vehicle_id', '=', record.id), ('date', '>=', first_of_month)]))
                 record.in_stock = total_fueled - total_consumed
 
             record.odometer_count = Odometer.search_count([('vehicle_id', '=', record.id)])
@@ -70,10 +68,10 @@ class fleet_vehicle(models.Model):
         if xml_id:
             res = self.env['ir.actions.act_window'].for_xml_id('fleet', xml_id)
             if self.model_id.brand_id.used_for_tanking and show_consumed:
-                domain = ['|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
+                domain = [('date', '>=', datetime.date.today().replace(day=1).strftime('%Y-%m-%d')), '|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
             else:
                 domain = [('vehicle_id', '=', self.id)]
-
+            print("domain %s" % domain)
             res.update(
                 context=dict(self.env.context, default_vehicle_id=self.id, group_by=False),
                 domain=domain
@@ -94,26 +92,6 @@ class fleet_vehicle(models.Model):
             return res
         return False
 
-    @api.model
-    def calculate_vehicle_cost(self):
-        Vehicle = self.env['fleet.vehicle']
-        LogFuel = self.env['fleet.vehicle.log.fuel']
-        FoaieParcurs = self.env['fleet_fpz.foaie_de_parcurs']
-
-        date_start = datetime.date.today() - datetime.timedelta(days=30)
-        price_per_liter = self.env['ir.values'].search([('name', '=', 'price_per_liter')])
-        price_per_m3 = self.env['ir.values'].search([('name', '=', 'price_per_m3')])
-        for record in Vehicle.search([('active', '=', True)]):
-            total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id), ('date', '>=', date_start)]))
-            total_gm_m3 = sum(foaie.gm_m3 for foaie in FoaieParcurs.search([('vehicle_id', '=', record.id), ('date', '>=', date_start)]))
-            total_km = sum(foaie.index_km_total for foaie in FoaieParcurs.search([('vehicle_id', '=', record.id), ('date', '>=', date_start)]))            
-            if price_per_m3 and total_fueled>0 and total_gm_m3>0:
-                record.cost_m_cub = round(total_gm_m3 * float(price_per_liter[0].value_unpickle) / total_fueled, 2)
-                print("vehicle=%s, cost_m3=%s, total_gm_m3=%s, price per liter=%s, total_fueled=%s" % (record.name, record.cost_m_cub, total_gm_m3, price_per_liter[0].value_unpickle, total_fueled))
-            if total_km>0 and price_per_liter and total_fueled>0:
-                record.cost_km = round(total_km * float(price_per_liter[0].value_unpickle) / total_fueled, 2)
-                print("vehicle=%s, cost_km=%s, total_km=%s, price per liter=%s, total_fueled=%s" % (record.name, record.cost_km, total_km, price_per_liter[0].value_unpickle, total_fueled))
-            record.write({})
 
 class fleet_vehicle_cost(models.Model):
     _inherit = ['fleet.vehicle.cost']
@@ -127,18 +105,26 @@ class fleet_vehicle_log_fuel(models.Model):
     from_vehicle_id = fields.Many2one('fleet.vehicle', 'From Vehicle', required=False, help='Vehicle from where was refueled', 
     domain="[('model_id.brand_id.used_for_tanking','=', True)]",
     )
-
    
     liter_stock = fields.Float(
        string=u'Liters in stock', 
-       compute='_compute_liter_stock'
+       compute='_compute_liter_stock',
+       store=False,
+    )
+
+    liter_alimentari = fields.Float(
+       string=u'Literi alimentati', 
+       compute='_compute_liter_alimentari',
+       store=False,
     )
     
-    #@api.depends('from_vehicle_id','liter')
     def _compute_liter_stock(self):
         for record in self:
-            
             record.liter_stock = -record.liter if record.from_vehicle_id else record.liter
+
+    def _compute_liter_alimentari(self):
+        for record in self:
+            record.liter_alimentari = 0 if record.from_vehicle_id else record.liter
     
 class fleet_vehicle_log_oil(models.Model):
     _name = 'fleet.vehicle.log.oil'
