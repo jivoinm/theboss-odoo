@@ -101,10 +101,20 @@ class Exploatare(models.Model):
         compute='_compute_cost_metru_cub'
     )
 
+    cost_pe_litru = fields.Float(
+        string=u'Cost pe litru',
+        compute='_compute_cost_pe_litru'
+    )
+
     @api.depends('total_metri_cubi_productie', 'total_litri_motorina')
     def _compute_cost_metru_cub(self):
         for record in self:
             record.cost_metru_cub = (record.total_metri_cubi_productie / record.total_litri_motorina) if record.total_litri_motorina > 0 else 0
+
+    @api.depends('total_metri_cubi_productie', 'total_litri_motorina')
+    def _compute_cost_pe_litru(self):
+        for record in self:
+            record.cost_pe_litru = (record.total_litri_motorina / record.total_metri_cubi_productie) if record.total_metri_cubi_productie > 0 else 0
     
     company_id = fields.Many2one(
         string=u'Licitat de la', 
