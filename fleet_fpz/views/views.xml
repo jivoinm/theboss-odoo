@@ -123,6 +123,19 @@
       </field>
     </record>
 
+    <record id="fleet_fpz_fleet_vehicle_fuel_view_search" model="ir.ui.view">
+        <field name="name">fleet.vehicle.log.fuel.form</field>
+        <field name="model">fleet.vehicle.log.fuel</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Stoc pe luna">
+               <filter string="Luna curenta" icon="terp-accessories-archiver" domain="[('date', '>=', datetime.date.today().replace(day=1).strftime('%Y-%m-%d'))]"/>
+               <separator orientation="vertical"/>
+               <filter name="group_date_vehicle_id" string="Data si vehicol" icon="fa-calendar" context="{'group_by': [u'date:month', u'vehicle_id']}"/>
+            </search>
+        </field>
+    </record>
+
     <record model='ir.ui.view' id='fleet_fpz_foaie_de_parcurs_form'>
         <field name="name">fleet_fpz.foaie_de_parcurs.form</field>
         <field name="model">fleet_fpz.foaie_de_parcurs</field>

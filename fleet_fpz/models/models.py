@@ -43,14 +43,20 @@ class fleet_vehicle(models.Model):
         LogService = self.env['fleet.vehicle.log.services']
         LogContract = self.env['fleet.vehicle.log.contract']
         Cost = self.env['fleet.vehicle.cost']
-        first_of_month = datetime.date.today().replace(day=1)
+        
         for record in self:
             record.show_stock = record.model_id.brand_id.used_for_tanking
             if record.show_stock:
-                print("first_of_month=%s", first_of_month)
-                total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id), ('date', '>=', first_of_month)]))
-                total_consumed = sum(log.liter for log in LogFuel.search([('from_vehicle_id', '=', record.id), ('date', '>=', first_of_month)]))
-                record.in_stock = total_fueled - total_consumed
+                stock_since = self.env['ir.values'].search([('name', '=', 'stock_since')])
+                filter_by_date = ('date', '>=', stock_since[0].value_unpickle) if stock_since else None
+                if filter_by_date:
+                    total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id), filter_by_date]))
+                    total_consumed = sum(log.liter for log in LogFuel.search([('from_vehicle_id', '=', record.id), filter_by_date]))
+                    record.in_stock = total_fueled - total_consumed
+                else:
+                    total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id)]))
+                    total_consumed = sum(log.liter for log in LogFuel.search([('from_vehicle_id', '=', record.id)]))
+                    record.in_stock = total_fueled - total_consumed
 
             record.odometer_count = Odometer.search_count([('vehicle_id', '=', record.id)])
             record.fuel_logs_count = LogFuel.search_count([('vehicle_id', '=', record.id)])
@@ -68,7 +74,12 @@ class fleet_vehicle(models.Model):
         if xml_id:
             res = self.env['ir.actions.act_window'].for_xml_id('fleet', xml_id)
             if self.model_id.brand_id.used_for_tanking and show_consumed:
-                domain = [('date', '>=', datetime.date.today().replace(day=1).strftime('%Y-%m-%d')), '|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
+                stock_since = self.env['ir.values'].search([('name', '=', 'stock_since')])
+                filter_by_date = ('date', '>=', stock_since[0].value_unpickle) if stock_since else None
+                if filter_by_date:
+                    domain = [filter_by_date, '|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
+                else:                    
+                    domain = ['|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
             else:
                 domain = [('vehicle_id', '=', self.id)]
             print("domain %s" % domain)
@@ -113,9 +124,9 @@ class fleet_vehicle_log_fuel(models.Model):
     )
 
     liter_alimentari = fields.Float(
-       string=u'Literi alimentati', 
+       string=u'Litri alimentati', 
        compute='_compute_liter_alimentari',
-       store=False,
+       store=True,
     )
     
     def _compute_liter_stock(self):
