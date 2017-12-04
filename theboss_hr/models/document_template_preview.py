@@ -12,7 +12,6 @@ class TemplatePreview(models.TransientModel):
 
     @api.model
     def _get_records(self):
-        print '_get_records.....'
         """ Return Records of particular Email Template's Model """
         template_id = self._context.get('template_id')
         default_res_id = self._context.get('default_res_id')
@@ -26,7 +25,6 @@ class TemplatePreview(models.TransientModel):
     @api.model
     def default_get(self, fields):
         result = super(TemplatePreview, self).default_get(fields)
-        print 'default_get.....'
         if 'res_id' in fields and not result.get('res_id'):
             records = self._get_records()
             result['res_id'] = records and records[0][0] or False  # select first record as a Default
@@ -36,14 +34,12 @@ class TemplatePreview(models.TransientModel):
     
     @api.multi
     def print_template(self):
-        print 'print %s' % self
-
+        pass
     res_id = fields.Selection(_get_records, 'Sample Document')
 
     @api.onchange('res_id')
     @api.multi
     def on_change_res_id(self):
-        print 'on_change_res_id.....'
         mail_values = {}
         if self.res_id and self._context.get('template_id'):
             template = self.env['hr.document'].browse(self._context['template_id'])

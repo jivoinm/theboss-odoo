@@ -7,7 +7,7 @@ from odoo.addons.google_account.models.google_service import GOOGLE_TOKEN_ENDPOI
 
 import json
 import re
-import urllib2
+import urllib.request
 import werkzeug.urls
 
 # luat de pe wikipedia:
@@ -72,7 +72,6 @@ def calc_check_digit(number):
     return '1' if check == 10 else str(check)
 
 def get_birth_date(number):
-    print "get_birth_date %s" % number
     """Split the date parts from the number and return the birth date."""
     centuries = {
         '1': 1900, '2': 1900, '3': 1800, '4': 1800, '5': 2000, '6': 2000,
@@ -86,7 +85,6 @@ def get_birth_date(number):
         raise InvalidComponent()
 
 def validate(number):
-    print "validate %s" % number
     """Checks to see if the number provided is a valid VAT number. This checks
     the length, formatting and check digit."""
     #number = compact(number)
@@ -105,7 +103,6 @@ def validate(number):
 
 
 def validate_cnp(number):
-    print "validate_cnp %s" % number
     """Checks to see if the number provided is a valid VAT number. This checks
     the length, formatting and check digit."""
     try:
@@ -280,12 +277,11 @@ class TheBossGoogleDrive(models.Model):
         access_token = self.get_access_token()
         # Copy template in to drive with help of new access token
         request_url = "https://www.googleapis.com/drive/v2/files/%s?fields=parents/id&access_token=%s" % (template_id, access_token)
-        print "request_url %s" % request_url
         headers = {"Content-type": "application/x-www-form-urlencoded"}
         try:
-            req = urllib2.Request(request_url, None, headers)
-            parents = urllib2.urlopen(req, timeout=TIMEOUT).read()
-        except urllib2.HTTPError:
+            req = urllib.request.Request(request_url, None, headers)
+            parents = urllib.urlopen(req, timeout=TIMEOUT).read()
+        except urllib.HTTPError:
             raise UserError(_("The Google Template cannot be found. Maybe it has been deleted."))
         parents_dict = json.loads(parents)
 
@@ -301,10 +297,9 @@ class TheBossGoogleDrive(models.Model):
             'Accept': 'text/plain'
         }
         data_json = json.dumps(data)
-        print "data_json %s" % data_json
         # resp, content = Http().request(request_url, "POST", data_json, headers)
-        req = urllib2.Request(request_url, data_json, headers)
-        content = urllib2.urlopen(req, timeout=TIMEOUT).read()
+        req = urllib.request.Request(request_url, data_json, headers)
+        content = urllib.urlopen(req, timeout=TIMEOUT).read()
         content = json.loads(content)
         res = {}
         if content.get('alternateLink'):
@@ -322,15 +317,15 @@ class TheBossGoogleDrive(models.Model):
             request_url = "https://www.googleapis.com/drive/v2/files/%s/permissions?emailMessage=This+is+a+drive+file+created+by+Odoo&sendNotificationEmails=false&access_token=%s" % (key, access_token)
             data = {'role': 'writer', 'type': 'anyone', 'value': '', 'withLink': True}
             try:
-                req = urllib2.Request(request_url, json.dumps(data), headers)
-                urllib2.urlopen(req, timeout=TIMEOUT)
-            except urllib2.HTTPError:
+                req = urllib.request.Request(request_url, json.dumps(data), headers)
+                urllib.urlopen(req, timeout=TIMEOUT)
+            except urllib.HTTPError:
                 raise self.env['res.config.settings'].get_config_warning(_("The permission 'reader' for 'anyone with the link' has not been written on the document"))
             if self.env.user.email:
                 data = {'role': 'writer', 'type': 'user', 'value': self.env.user.email}
                 try:
-                    req = urllib2.Request(request_url, json.dumps(data), headers)
-                    urllib2.urlopen(req, timeout=TIMEOUT)
-                except urllib2.HTTPError:
+                    req = urllib.request.Request(request_url, json.dumps(data), headers)
+                    urllib.urlopen(req, timeout=TIMEOUT)
+                except urllib.HTTPError:
                     pass
         return res

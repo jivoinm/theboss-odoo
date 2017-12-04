@@ -96,8 +96,7 @@
 	        <field name="interval_type">days</field>
 	        <field name="numbercall">-1</field>
 	        <field name="doal">1</field>
-	        <!--<field name="nextcall" >2016-12-31 23:59:59</field>-->
-	        <field name="model" eval="'hr.applicant'" />
+			<field name="model_id" ref="hr_recruitment.model_hr_applicant"/>
 	        <field name="function" eval="'applicants_older_than_job'" />
 	        <field name="args" eval="()" />
 	        <field name="priority" eval="1" />

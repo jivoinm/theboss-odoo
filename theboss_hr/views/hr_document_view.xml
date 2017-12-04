@@ -8,9 +8,9 @@
                 <form string="Templates">
                     <sheet>
                         <div class="oe_button_box" name="button_box">
-                            <field name="ref_ir_act_report" invisible="1"/>
+                            <field name="ref_ir_act_window" invisible="1"/>
                             <button class="oe_stat_button" name="create_action" type="object"
-                                    attrs="{'invisible':[('ref_ir_act_report','!=',False)]}" icon="fa-plus"
+                                    attrs="{'invisible':[('ref_ir_act_window','!=',False)]}" icon="fa-plus"
                                     help="Display an option on related documents to open a composition wizard with this template">
                                 <div class="o_form_field o_stat_info">
                                     <span class="o_stat_text">Add</span>
@@ -19,7 +19,7 @@
                             </button>
                             <button name="unlink_action" type="object" 
                                     class="oe_stat_button" icon="fa-minus"
-                                    attrs="{'invisible':[('ref_ir_act_report','=',False)]}"
+                                    attrs="{'invisible':[('ref_ir_act_window','=',False)]}"
                                     help="Remove the contextual action to use this template on related documents" widget="statinfo">
                                 <div class="o_form_field o_stat_info">
                                     <span class="o_stat_text">Remove</span>
