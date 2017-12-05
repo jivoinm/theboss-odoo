@@ -47,18 +47,7 @@
 				<field name="employee_id" position="after">
 					<field name="sign_date"/>
 				</field>
-				<field name="working_hours" position="before">
-					<label for="period_type" string="Period type"/>
-					<div>
-                        <field name="period_type"/>
-                    </div>
-				</field>
-				<field name="working_hours" position="replace">
-					<label for="working_hours" string="Scheduler"/>
-					<div>
-                        <field name="working_hours"/>
-                    </div>
-				</field>
+				
                 <xpath expr="/form/sheet/notebook/page[@name='information']" position="after">
 					<page string="Work Conditions" name="conditions">
 						<group colspan="4">

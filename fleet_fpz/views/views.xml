@@ -323,7 +323,6 @@
                 <field name="consum_comb_diference"/>
                 <field name="km_echiv_parcurs"/>
                 <field name="km_echiv_incarcat"/>
-                <field name="km_echiv_gol"/>
             </tree>
         </field>
     </record>
@@ -354,12 +353,12 @@
         </field>
     </record>
 
-    <record id="action_open_invoice" model="ir.values">
+    <!-- <record id="action_open_invoice" model="ir.values">
       <field eval="'client_action_multi'" name="key2"/>
       <field eval="'fleet_fpz.foaie_de_parcurs'" name="model"/>
       <field name="name">Aproba</field>
       <field eval="'ir.actions.server,%d'%approve_item_action" name="value"/>
-    </record>
+    </record> -->
     <!-- menu categories -->
     <menuitem action="fleet_fpz_foaie_de_parcurs_act" parent="fleet.fleet_vehicles"
       id="fleet_fpz_foaie_de_parcurs_act_menu"/> 

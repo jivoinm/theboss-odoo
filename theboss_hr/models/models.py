@@ -32,7 +32,6 @@ class TheBossApplicant(models.Model):
 
     @api.model
     def write_message(self, message):
-        print 'write_message........'
         post_vars = {'subject': "Message subject",
                      'body': "Message body",
                      'partner_ids': [(4, 2)],} # Where "4" adds the ID to the list 
@@ -47,7 +46,6 @@ class TheBossApplicant(models.Model):
 
     @api.model
     def applicants_older_than_job(self):
-        print 'applicants_older_than_job'
         #search for applications older then configured value
         for stage in self.env['hr.recruitment.stage'].search([('max_days_waiting','>', 0)]):
             if stage.email_template_id:

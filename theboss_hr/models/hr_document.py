@@ -7,20 +7,16 @@ import copy
 import datetime
 import dateutil.relativedelta as relativedelta
 import logging
-import lxml
-import urlparse
 
-from urllib import urlencode, quote as quote
+import functools
+import lxml
+from werkzeug import urls
 
 from odoo import _, api, fields, models, tools
-from odoo import report as odoo_report
 from odoo.exceptions import UserError
-from odoo import http
-from odoo.http import request
-from odoo.addons.web.controllers.main import serialize_exception,content_disposition
+from odoo.tools import pycompat
 
 _logger = logging.getLogger(__name__)
-
 
 def format_date(env, date, pattern=False):
     if not date:
@@ -84,7 +80,7 @@ def format_amount(env, amount, currency):
     return u'{pre}{0}{post}'.format(formatted_amount, pre=pre, post=post)
 
 try:
-    # We use a jinja2 sandboxed environment to render mako templates.
+     # We use a jinja2 sandboxed environment to render mako templates.
     # Note that the rendering does not cover all the mako syntax, in particular
     # arbitrary Python statements are not accepted, and not all expressions are
     # allowed: only "public" attributes (not starting with '_') of objects may
@@ -106,8 +102,8 @@ try:
     )
     mako_template_env.globals.update({
         'str': str,
-        'quote': quote,
-        'urlencode': urlencode,
+        'quote': urls.url_quote,
+        'urlencode': urls.url_encode,
         'datetime': datetime,
         'len': len,
         'abs': abs,
@@ -115,10 +111,9 @@ try:
         'max': max,
         'sum': sum,
         'filter': filter,
-        'reduce': reduce,
+        'reduce': functools.reduce,
         'map': map,
         'round': round,
-        'cmp': cmp,
 
         # dateutil.relativedelta is an old-style class and cannot be directly
         # instanciated wihtin a jinja2 expression, so a lambda "proxy" is
@@ -248,7 +243,6 @@ class HRDocument(models.Model):
         ActWindowSudo = self.env['ir.actions.report.xml'].sudo()
         IrValuesSudo = self.env['ir.values'].sudo()
         #view = self.env.ref('theboss_hr.document_template_preview_form')
-        print 'create_action in HRDocument'
         for template in self:
             src_obj = template.model_id.model
 
@@ -285,18 +279,17 @@ class HRDocument(models.Model):
         # form a tree
         root = lxml.html.fromstring(html)
         if not len(root) and root.text is None and root.tail is None:
-            html = '<div>%s</div>' % html
-            root = lxml.html.fromstring(html)
+            html = u'<div>%s</div>' % html
+            root = lxml.html.fromstring(html, encoding='unicode')
 
-        base_url = self.env['ir.config_parameter'].get_param('web.base.url')
-        (base_scheme, base_netloc, bpath, bparams, bquery, bfragment) = urlparse.urlparse(base_url)
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        base = urls.url_parse(base_url)
 
         def _process_link(url):
-            new_url = url
-            (scheme, netloc, path, params, query, fragment) = urlparse.urlparse(url)
-            if not scheme and not netloc:
-                new_url = urlparse.urlunparse((base_scheme, base_netloc, path, params, query, fragment))
-            return new_url
+            new_url = urls.url_parse(url)
+            if new_url.scheme and new_url.netloc:
+                return url
+            return new_url.replace(scheme=base.scheme, netloc=base.netloc).to_url()
 
         # check all nodes, replace :
         # - img src -> check URL
@@ -304,12 +297,12 @@ class HRDocument(models.Model):
         for node in root.iter():
             if node.tag == 'a' and node.get('href'):
                 node.set('href', _process_link(node.get('href')))
-            elif node.tag == 'img' and not node.get('src', 'data').startswith('data'):
+            elif node.tag == 'img' and not node.get('src', 'data').startswith(u'data'):
                 node.set('src', _process_link(node.get('src')))
 
-        html = lxml.html.tostring(root, pretty_print=False, method='html')
+        html = lxml.html.tostring(root, pretty_print=False, method='html', encoding='unicode')
         # this is ugly, but lxml/etree tostring want to put everything in a 'div' that breaks the editor -> remove that
-        if html.startswith('<div>') and html.endswith('</div>'):
+        if html.startswith(u'<div>') and html.endswith(u'</div>'):
             html = html[5:-6]
         return html
 
@@ -323,7 +316,7 @@ class HRDocument(models.Model):
         """ Render the given template text, replace mako expressions ``${expr}``
         with the result of evaluating these expressions with an evaluation
         context containing:
-         - ``user``: browse_record of the current user
+         - ``user``: Model of the current user
          - ``object``: record of the document record this mail is related to
          - ``context``: the context passed to the mail composition wizard
         :param str template_txt: the template text to render
@@ -331,7 +324,7 @@ class HRDocument(models.Model):
         :param int res_ids: list of ids of document records those mails are related to.
         """
         multi_mode = True
-        if isinstance(res_ids, (int, long)):
+        if isinstance(res_ids, pycompat.integer_types):
             multi_mode = False
             res_ids = [res_ids]
 
@@ -346,7 +339,7 @@ class HRDocument(models.Model):
             return multi_mode and results or results[res_ids[0]]
 
         # prepare template variables
-        records = self.env[model].browse(filter(None, res_ids))  # filter to avoid browsing [None]
+        records = self.env[model].browse(it for it in res_ids if it)  # filter to avoid browsing [None]
         res_to_rec = dict.fromkeys(res_ids, None)
         for record in records:
             res_to_rec[record.id] = record
@@ -357,7 +350,7 @@ class HRDocument(models.Model):
             'user': self.env.user,
             'ctx': self._context,  # context kw would clash with mako internals
         }
-        for res_id, record in res_to_rec.iteritems():
+        for res_id, record in res_to_rec.items():
             variables['object'] = record
             try:
                 render_result = template.render(variables)
@@ -369,7 +362,7 @@ class HRDocument(models.Model):
             results[res_id] = render_result
 
         if post_process:
-            for res_id, result in results.iteritems():
+            for res_id, result in results.items():
                 results[res_id] = self.render_post_process(result)
 
         return multi_mode and results or results[res_ids[0]]
@@ -377,7 +370,7 @@ class HRDocument(models.Model):
     @api.multi
     def get_template(self, res_ids):
         multi_mode = True
-        if isinstance(res_ids, (int, long)):
+        if isinstance(res_ids, pycompat.integer_types):
             res_ids = [res_ids]
             multi_mode = False
 
@@ -390,7 +383,7 @@ class HRDocument(models.Model):
         self.ensure_one()
 
         langs = self.render_template(self.lang, self.model, res_ids)
-        for res_id, lang in langs.iteritems():
+        for res_id, lang in langs.items():
             if lang:
                 template = self.with_context(lang=lang)
             else:
@@ -415,7 +408,7 @@ class HRDocument(models.Model):
         """
         self.ensure_one()
         multi_mode = True
-        if isinstance(res_ids, (int, long)):
+        if isinstance(res_ids, (int)):
             res_ids = [res_ids]
             multi_mode = False
         if fields is None:
@@ -425,11 +418,11 @@ class HRDocument(models.Model):
 
         # templates: res_id -> template; template -> res_ids
         templates_to_res_ids = {}
-        for res_id, template in res_ids_to_templates.iteritems():
+        for res_id, template in res_ids_to_templates.items():
             templates_to_res_ids.setdefault(template, []).append(res_id)
 
         results = dict()
-        for template, template_res_ids in templates_to_res_ids.iteritems():
+        for template, template_res_ids in templates_to_res_ids.items():
             Template = self.env['hr.document']
             # generate fields value for all res_ids linked to the current template
             if template.lang:
@@ -439,7 +432,7 @@ class HRDocument(models.Model):
                 generated_field_values = Template.render_template(
                     getattr(template, field), template.model, template_res_ids,
                     post_process=(field == 'body_html'))
-                for res_id, field_value in generated_field_values.iteritems():
+                for res_id, field_value in generated_field_values.items():
                     results.setdefault(res_id, dict())[field] = field_value
             # compute recipients
             if any(field in fields for field in ['email_to', 'partner_to', 'email_cc']):
@@ -499,10 +492,10 @@ class HRDocument(models.Model):
         report = template.report_template
         report_service = report.report_name
 
-        if report.report_type in ['qweb-html', 'qweb-pdf']:
-            result, format = Template.env['report'].get_pdf([res_id], report_service), 'pdf'
-        else:
-            result, format = odoo_report.render_report(self._cr, self._uid, [res_id], report_service, {'model': template.model}, Template._context)
+        #if report.report_type in ['qweb-html', 'qweb-pdf']:
+        #    result, format = Template.env['report'].get_pdf([res_id], report_service), 'pdf'
+        #else:
+        #    result, format = odoo_report.render_report(self._cr, self._uid, [res_id], report_service, {'model': template.model}, Template._context)
 
         # TODO in trunk, change return format to binary to match message_post expected format
         result = base64.b64encode(result)

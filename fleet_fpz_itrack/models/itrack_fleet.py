@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
-from urllib2 import Request, urlopen
+#from urllib2 import Request, urlopen
+#from urllib.request import urlopen
+
 from dateutil import tz
 import requests, json, logging, datetime, os.path
 import sys, traceback, time
