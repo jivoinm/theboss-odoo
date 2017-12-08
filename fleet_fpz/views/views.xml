@@ -13,7 +13,7 @@
                 type="object"
                 class="oe_stat_button"
                 icon="fa-home"
-                context="{'xml_id':'fleet_vehicle_log_fuel_action', 'show_consumed': True}"
+                context="{'xml_id':'fleet_fpz_tank_log_fuel_action', 'show_consumed': True}"
                 help="listeaza combustibil in stoc pe luna curenta" >
                 <field name="in_stock" widget="statinfo" string="In Stock"/>
             </button>
@@ -88,14 +88,41 @@
     </record>
 
      <!-- Inherit Form view -->
-    <record id="fleet_fpz_fleet_vehicle_fuel_view_form" model="ir.ui.view">
-      <field name="name">fleet.vehicle.log.fuel.form</field>
-      <field name="model">fleet.vehicle.log.fuel</field>
-      <field name="inherit_id" ref="fleet.fleet_vehicle_log_fuel_view_form"/>
+    <record id="fleet_fpz_fleet_tank_fuel_view_form" model="ir.ui.view">
+      <field name="name">fleet_fpz.tank.log.fuel.form</field>
+      <field name="model">fleet_fpz.tank.log.fuel</field>
       <field name="arch" type="xml">
-          <xpath expr="//field[@name='vehicle_id']" position="after">
-            <field name="from_vehicle_id"/>
-          </xpath>
+        <form string="Tank Logs">
+              <sheet>
+                  <group>
+                      <group string="Vehicle Details">
+                          <field name="vehicle_id"/>
+                          <field name="from_vehicle_id"/>
+                      </group>
+                      <group string="Refueling Details">
+                          <field name="liter"/>
+                          <field name="price_per_liter"/>
+                          <field name="amount"/>
+                      </group>
+                  </group>
+                  <group>
+                      <group string="Odometer Details">
+                          <label for="odometer"/>
+                          <div class="o_row">
+                              <field name="odometer"/>
+                              <field name="odometer_unit"/>
+                          </div>
+                      </group>
+                      <group string="Additional Details">
+                          <field name="date" />
+                          <field name="purchaser_id" />
+                          <field name="inv_ref" />
+                          <field name="vendor_id" context="{'default_supplier': True}"/>
+                      </group>
+                  </group>
+                  <field name="notes" placeholder="Write here any other information"/>
+              </sheet>
+          </form>
       </field>
     </record>
 
@@ -105,22 +132,40 @@
       <field name="inherit_id" ref="fleet.fleet_vehicle_log_fuel_view_tree"/>
       <field name="arch" type="xml">
           <xpath expr="//tree" position="replace">
-             <tree string="Fuel Logs" colors="red:from_vehicle_id">
+             <tree string="Fuel Logs">
                     <field name="date" />
                     <field name="vehicle_id" />
-                    <field name="from_vehicle_id"/>
                     <field name="odometer" invisible="1"/>
                     <field name="odometer_unit" invisible="1"/>
                     <field name="purchaser_id" />
                     <field name="inv_ref" invisible="1"/>
                     <field name="vendor_id" invisible="1"/>
-                    <field name="liter_stock" sum="Liters in stock"/>
-                    <field name="liter_alimentari" sum="Litri alimentari"/>
+                    <field name="liter" sum="Litri alimentari"/>
                     <field name="price_per_liter" invisible="1"/>
                     <field name="amount" sum="Price"/>
                 </tree>
           </xpath>
       </field>
+    </record>
+
+    <record id="fleet_fpz_fleet_tank_fuel_view_tree" model="ir.ui.view">
+      <field name="name">fleet_fpz.tank.log.fuel.tree</field>
+      <field name="model">fleet_fpz.tank.log.fuel</field>
+      <field name="arch" type="xml">
+              <tree string="Fuel Logs">
+                  <field name="date" />
+                  <field name="from_vehicle_id" />
+                  <field name="vehicle_id" />
+                  <field name="odometer" invisible="1"/>
+                  <field name="odometer_unit" invisible="1"/>
+                  <field name="purchaser_id" />
+                  <field name="inv_ref" invisible="1"/>
+                  <field name="vendor_id" invisible="1"/>
+                  <field name="liter" sum="Total Litri"/>
+                  <field name="price_per_liter" invisible="1"/>
+                  <field name="amount" sum="Price"/>
+              </tree>
+          </field>
     </record>
 
     <record id="fleet_fpz_fleet_vehicle_fuel_view_search" model="ir.ui.view">
@@ -129,9 +174,32 @@
         <field name="type">search</field>
         <field name="arch" type="xml">
             <search string="Stoc pe luna">
+               <field name="vehicle_id" />
+               <field name="date"/>
+               <field name="purchaser_id" />
+               <field name="liter" />
+               <field name="amount" sum="Price"/>
                <filter string="Luna curenta" icon="terp-accessories-archiver" domain="[('date', '>=', datetime.date.today().replace(day=1).strftime('%Y-%m-%d'))]"/>
                <separator orientation="vertical"/>
                <filter name="group_date_vehicle_id" string="Data si vehicol" icon="fa-calendar" context="{'group_by': [u'date:month', u'vehicle_id']}"/>
+            </search>
+        </field>
+    </record>
+    <record id="fleet_fpz_fleet_tank_fuel_view_search" model="ir.ui.view">
+        <field name="name">fleet_fpz.tank.log.fuel.form</field>
+        <field name="model">fleet_fpz.tank.log.fuel</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Stoc pe luna">
+               <field name="from_vehicle_id" />
+               <field name="vehicle_id" />
+               <field name="date"/>
+               <field name="purchaser_id" />
+               <field name="liter" />
+               <field name="amount" sum="Price"/>
+               <filter string="Luna curenta" icon="terp-accessories-archiver" domain="[('date', '>=', datetime.date.today().replace(day=1).strftime('%Y-%m-%d'))]"/>
+               <separator orientation="vertical"/>
+               <filter name="group_date_from_vehicle_id" string="Data si vehicol" icon="fa-calendar" context="{'group_by': [u'date:month', u'from_vehicle_id']}"/>
             </search>
         </field>
     </record>
@@ -464,8 +532,25 @@
               </p>
             </field>
         </record>
-
+        <record id='fleet_fpz_tank_log_fuel_action' model='ir.actions.act_window'>
+            <field name="name">Tank Logs</field>
+            <field name="res_model">fleet_fpz.tank.log.fuel</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,graph</field>
+            <field name="context">{"search_default_group_date_from_vehicle_id" : True}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to create a new tank fuel log.
+              </p><p>
+                Here you can add refuelling entries for all vehicles.  You can
+                also filter logs of a particular vehicle using the search
+                field.
+              </p>
+            </field>
+        </record>
+        
         <menuitem action="fleet_vehicle_log_oil_action" parent="fleet.fleet_vehicles" id="fleet_vehicle_log_oil_menu"/>
+        <menuitem action="fleet_fpz_tank_log_fuel_action" parent="fleet.fleet_vehicles" id="fleet_tank_log_menu"/>
 
   </data>
 </odoo>
