@@ -34,10 +34,15 @@ class fleet_vehicle(models.Model):
 
     oil_logs_count = fields.Integer(compute="_compute_count_all", string='Oil Logs')
     in_stock = fields.Float(string=u'In Stock', compute='_compute_count_all')
-    show_stock = fields.Boolean(compute='_compute_count_all')
+    show_stock = fields.Boolean(compute='_compute_show_stock', store=True)
+
+    def _compute_show_stock(self):
+        for record in self:
+            record.show_stock = record.model_id.brand_id.used_for_tanking
     
     def _compute_count_all(self):
         Odometer = self.env['fleet.vehicle.odometer']
+        StockLogFuel = self.env['fleet_fpz.tank.log.fuel']
         LogFuel = self.env['fleet.vehicle.log.fuel']
         LogOil = self.env['fleet.vehicle.log.oil']
         LogService = self.env['fleet.vehicle.log.services']
@@ -45,17 +50,16 @@ class fleet_vehicle(models.Model):
         Cost = self.env['fleet.vehicle.cost']
         
         for record in self:
-            record.show_stock = record.model_id.brand_id.used_for_tanking
             if record.show_stock:
                 stock_since = self.env['ir.values'].search([('name', '=', 'stock_since')])
                 filter_by_date = ('date', '>=', stock_since[0].value_unpickle) if stock_since else None
                 if filter_by_date:
                     total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id), filter_by_date]))
-                    total_consumed = sum(log.liter for log in LogFuel.search([('from_vehicle_id', '=', record.id), filter_by_date]))
+                    total_consumed = sum(log.liter for log in StockLogFuel.search([('from_vehicle_id', '=', record.id), filter_by_date]))
                     record.in_stock = total_fueled - total_consumed
                 else:
                     total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id)]))
-                    total_consumed = sum(log.liter for log in LogFuel.search([('from_vehicle_id', '=', record.id)]))
+                    total_consumed = sum(log.liter for log in StockLogFuel.search([('from_vehicle_id', '=', record.id)]))
                     record.in_stock = total_fueled - total_consumed
 
             record.odometer_count = Odometer.search_count([('vehicle_id', '=', record.id)])
@@ -72,7 +76,11 @@ class fleet_vehicle(models.Model):
         xml_id = self.env.context.get('xml_id')
         show_consumed = self.env.context.get('show_consumed')
         if xml_id:
-            res = self.env['ir.actions.act_window'].for_xml_id('fleet', xml_id)
+            try:
+                res = self.env['ir.actions.act_window'].for_xml_id('fleet', xml_id)    
+            except:
+                res = self.env['ir.actions.act_window'].for_xml_id('fleet_fpz', xml_id)
+             
             if self.model_id.brand_id.used_for_tanking and show_consumed:
                 stock_since = self.env['ir.values'].search([('name', '=', 'stock_since')])
                 filter_by_date = ('date', '>=', stock_since[0].value_unpickle) if stock_since else None
@@ -82,7 +90,7 @@ class fleet_vehicle(models.Model):
                     domain = ['|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
             else:
                 domain = [('vehicle_id', '=', self.id)]
-            print("domain %s" % domain)
+
             res.update(
                 context=dict(self.env.context, default_vehicle_id=self.id, group_by=False),
                 domain=domain
@@ -109,33 +117,34 @@ class fleet_vehicle_cost(models.Model):
     cost_type = fields.Selection([('contract', 'Contract'), ('services', 'Services'), ('fuel', 'Fuel'), ('oil', 'Oil'), ('other', 'Other')],
         'Category of the cost', default="other", help='For internal purpose only', required=True)
 
-class fleet_vehicle_log_fuel(models.Model):
-    
+class fleet_tank_log_fuel(models.Model):
+    _name = 'fleet_fpz.tank.log.fuel'
     _inherit = ['fleet.vehicle.log.fuel']
 
     from_vehicle_id = fields.Many2one('fleet.vehicle', 'From Vehicle', required=False, help='Vehicle from where was refueled', 
     domain="[('model_id.brand_id.used_for_tanking','=', True)]",
     )
    
-    liter_stock = fields.Float(
-       string=u'Liters in stock', 
-       compute='_compute_liter_stock',
-       store=False,
-    )
+    # liter_stock = fields.Float(
+    #    string=u'Liters in stock', 
+    #    compute='_compute_liter_stock',
+    #    store=False,
+    # )
 
-    liter_alimentari = fields.Float(
-       string=u'Litri alimentati', 
-       compute='_compute_liter_alimentari',
-       store=True,
-    )
+    # liter_alimentari = fields.Float(
+    #    string=u'Litri alimentati', 
+    #    compute='_compute_liter_alimentari',
+    #    store=True,
+    # )
     
-    def _compute_liter_stock(self):
-        for record in self:
-            record.liter_stock = -record.liter if record.from_vehicle_id else record.liter
+    # def _compute_liter_stock(self):
+    #     for record in self:
+    #         record.liter_stock = -record.liter if record.from_vehicle_id else record.liter
 
-    def _compute_liter_alimentari(self):
-        for record in self:
-            record.liter_alimentari = 0 if record.from_vehicle_id else record.liter
+    # def _compute_liter_alimentari(self):
+    #     for record in self:
+    #         record.liter_alimentari = (0 if record.vehiche_id.show_stock else record.liter) if record.from_vehicle_id else record.liter
+
     
 class fleet_vehicle_log_oil(models.Model):
     _name = 'fleet.vehicle.log.oil'

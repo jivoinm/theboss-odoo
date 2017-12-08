@@ -31,12 +31,11 @@
             <field name="valoare">1.4</field>
             <field name="descriere">Drumuri a caror stare impune schimbari de viteza pe cca. 70% din parcurs. Drumuri de pamint si terasamente, in stare mediocra. Drumuri pavate cu bolovani de riu sau cu piatra, in stare rea.</field>
           </record>
-          <record id="object4" model="fleet_fpz.categorie_drum">
+          <record id="object5" model="fleet_fpz.categorie_drum">
             <field name="name">VI (H)</field>
             <field name="coeficient">D6</field>
             <field name="valoare">1.6</field>
             <field name="descriere">Toate celelalte drumuri cu o stare de viabilitate sau care prezinta declivitati ce nu permit circulatia cu viteze mai mari de 15 km/ora pe toata lungimea lor.</field>
           </record>
-    
     </data>
 </odoo>
