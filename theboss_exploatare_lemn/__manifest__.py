@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Flota Masini - FAZ",
+    'name': "The Boss Exploatare",
 
     'summary': """
-        Foi de parcurs zilnice pentru flota de masini""",
+        Exploatare lemn""",
 
     'description': """
-        Foi de parcurs zilnice pentru flota de masini
+        ...
     """,
 
     'author': "The Boss Software Management SRL",
-    'website': "http://www.theboss.go.ro",
+    'website': "http://theboss.go.ro",
 
     # Categories can be used to filter modules in modules listing
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
@@ -19,17 +19,16 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'fleet', 'hr'],
+    'depends': ['base', 'fleet'],
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
-        'views/faz_seq.xml',
         'views/views.xml',
         'views/templates.xml',
         'data/data.xml',
     ],
-    'css': ['static/css/my_css.css'],
+    #'css': ['static/css/my_css.css'],
     # only loaded in demonstration mode
     'demo': [
         'demo/demo.xml',

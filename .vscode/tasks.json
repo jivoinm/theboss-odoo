@@ -6,7 +6,7 @@
         {
             "taskName": "stop odoo",
             "type": "shell",
-            "command": "docker stop odoo",
+            "command": "docker stop odoo10",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -15,7 +15,7 @@
         {
             "taskName": "start odoo",
             "type": "shell",
-            "command": "docker start -a odoo",
+            "command": "docker start -a odoo10",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -24,7 +24,7 @@
         {
             "taskName": "rebuild odoo",
             "type": "shell",
-            "command": ".~/rebuild-odoo.sh",
+            "command": ".~/rebuild-odoo-10.sh",
             "group": {
                 "kind": "build",
                 "isDefault": true

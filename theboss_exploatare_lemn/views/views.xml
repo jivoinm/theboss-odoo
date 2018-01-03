@@ -1,0 +1,173 @@
+<odoo>
+  <data>
+   
+   <!-- VIEWS: "Exploatare Lemn"
+   
+       - Model·········: theboss.exploatare
+       - Base Addons···: base    
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+   
+   <!-- Tree view for "Explatare Lemn" -->
+   <record id="view_theboss_exploatare_tree" model="ir.ui.view">
+       <field name="name">view.theboss.exploatare.tree</field>
+       <field name="model">theboss.exploatare</field>
+       <field name="arch" type="xml">
+          <tree string="Exploatare Lemn">
+              <field name="name" />
+              <field name="date" />
+              <field name="company_id" />
+              <field name="responsabil_uid" />
+              <field name="total_metri_cubi_productie" />
+              <field name="total_cost_motorina" />
+              <field name="total_litri_motorina" />
+              <field name="cost_metru_cub" />
+              <field name="cost_pe_litru" />
+          </tree>
+       </field>
+   </record>
+   
+   <!-- Form view for "Explatare Lemn" -->
+   <record id="view_theboss_exploatare_form" model="ir.ui.view">
+       <field name="name">view.theboss.exploatare.form</field>
+       <field name="model">theboss.exploatare</field>
+       <field name="arch" type="xml">
+          <form string="Partida/Exploatare" create="1" delete="1" edit="1">
+              <sheet>
+                  <div class="oe_title">
+                      <label for="name" class="oe_edit_only" />
+                      <h1><field name="name" placeholder="Denumire partida..." /></h1>
+                  </div>
+                  
+                  <group>
+                    <field name="company_id" />
+                    <field name="responsabil_uid" />
+                    <field name="date" />
+                  </group>
+                  <group>
+                      <notebook colspan="4">
+                          <page string="Cost productie" >
+                            <field name="cost_productie_ids"/>
+                          </page>
+                          
+                          <page string="Cost motorina" >
+                              <field name="cost_motorina_ids"/>
+                          </page>
+                      </notebook>
+                      <group class="oe_subtotal_footer">
+                          <field name="cost_metru_cub" attrs="{'readonly': True}"/> %
+                          <field name="cost_pe_litru" attrs="{'readonly': True}"/> %
+                          <field name="total_cost_productie" attrs="{'readonly': True}"/> RON
+                          <field name="total_metri_cubi_productie" attrs="{'readonly': True}"/> m3
+                          <field name="total_cost_motorina" attrs="{'readonly': True}"/> RON
+                          <field name="total_litri_motorina" attrs="{'readonly': True}"/> l
+                      </group>
+                  </group>
+              </sheet>
+          </form>
+        </field>
+   </record>
+   
+   
+   <record id='view_theboss_exploatare_action' model='ir.actions.act_window'>
+        <field name="name">Exploatare</field>
+        <field name="res_model">theboss.exploatare</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form,graph</field>
+        <field name="context">{"search_default_groupby_date" : True}</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Clic aici sa adaugi o noua exploatare.
+          </p><p>
+            Aicea vei putea adauga costuri pe productie si motorina.
+          </p>
+        </field>
+    </record>
+
+    
+    <!-- VIEWS: "Cost productie"
+    
+        - Model·········: <theboss class="cost productie"></theboss>
+        - Base Addons···: base    
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    
+    <!-- Tree view for "theboss.cost.productie" -->
+    <record id="view_theboss_cost_productie_tree" model="ir.ui.view">
+        <field name="name">theboss.cost.productie.tree</field>
+        <field name="model">theboss.cost.productie</field>
+        <field name="arch" type="xml">
+            <tree string="Cost productie" create="1" delete="1" edit="1" editable="bottom">
+                <field name="name" />
+                <field name="date" />
+                <field name="total_metri_cubi" />
+                <field name="total" />
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Form view for "theboss.cost.productie" -->
+    <record id="view_theboss_cost_productie_form" model="ir.ui.view">
+        <field name="name">view.theboss.cost.productie.form</field>
+        <field name="model">theboss.cost.productie</field>
+        <field name="arch" type="xml">
+            
+            <form string="Cost de productie" create="1" delete="1" edit="1">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" />
+                        <h1><field name="name" placeholder="Describe the item..." /></h1>
+                    </div>
+                    <field name="date" />
+                    <field name="total_metri_cubi" />
+                    <field name="total" />
+                </sheet>
+            </form>
+                        
+        </field>
+    </record>
+    
+        <!-- VIEWS: "Cost motorina"
+    
+        - Model·········: <theboss class="cost motorina"></theboss>
+        - Base Addons···: base    
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    
+    <!-- Tree view for "theboss.cost.motorina" -->
+    <record id="view_theboss_cost_motorina_tree" model="ir.ui.view">
+        <field name="name">theboss.cost.motorina.tree</field>
+        <field name="model">theboss.cost.motorina</field>
+        <field name="arch" type="xml">
+            <tree string="Cost productie" create="1" delete="1" edit="1" editable="bottom">
+                <field name="name" />
+                <field name="date" />
+                <field name="total_litri"/>
+                <field name="pret_litru"/>
+                <field name="total" />
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Form view for "theboss.cost.motorina" -->
+    <record id="view_theboss_cost_motorina_form" model="ir.ui.view">
+        <field name="name">view.theboss.cost.motorina.form</field>
+        <field name="model">theboss.cost.motorina</field>
+        <field name="arch" type="xml">
+            
+            <form string="Cost de motorina" create="1" delete="1" edit="1">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" />
+                        <h1><field name="name" placeholder="Describe the item..." /></h1>
+                    </div>
+                    <field name="date" />
+                    <field name="total_litri"/>
+                    <field name="pret_litru"/>
+                    <field name="total" />
+                </sheet>
+            </form>
+                        
+        </field>
+    </record>
+    <menuitem action="view_theboss_exploatare_action" parent="fleet.fleet_vehicles" id="view_theboss_exploatare_menu"/>
+
+  </data>
+</odoo>

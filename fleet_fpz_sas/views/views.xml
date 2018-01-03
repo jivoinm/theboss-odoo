@@ -1,0 +1,48 @@
+<odoo>
+  <data>
+    
+    <!-- VIEWS: "SAS Fleet"
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    
+    <!-- Form view for "sas_fleet.settings" -->
+    <record id="view_sas_fleet_settings_form" model="ir.ui.view">
+        <field name="name">view.sas_fleet_settings.form</field>
+        <field name="model">sas_fleet.settings</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="SAS Fleet Settings" class="oe_form_configuration">
+                <header>
+                    <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                    or
+                    <button string="Cancel" type="object" name="cancel" class="oe_link"/>
+                </header>
+                <sheet>
+                    <group string="Account Settings">
+                        <field name="login" />
+                        <field name="password" />
+                        <field name="culture" />
+                        <field name="version" />
+                        <field name="server_url" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+     
+    <record id="action_sas_fleet_settings"
+                model="ir.actions.act_window">
+            <field name="name">SAS Fleet Settings</field>
+            <field name="res_model">sas_fleet.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+
+        <menuitem id="menu_sas_fleet_settings"
+                  name="SAS Fleet Settings"
+                  parent="base.menu_administration"
+                  sequence="90"
+                  action="action_sas_fleet_settings" />
+    
+  </data>
+</odoo>
+  

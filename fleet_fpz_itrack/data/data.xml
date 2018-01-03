@@ -1,0 +1,14 @@
+<odoo>
+    <data>
+         <!-- <record id="itrack_login_object" model="ir.config_parameter">
+            <field name="key">itrack_server.api_key</field>
+            <field name="value">test</field>
+            <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        </record>
+        <record id="itrack_password_object" model="ir.config_parameter">
+            <field name="key">itrack_server.api_url</field>
+            <field name="value">test</field>
+            <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        </record> -->
+    </data>
+</odoo>

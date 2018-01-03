@@ -6,6 +6,15 @@ from dateutil.relativedelta import relativedelta
 
 _logger = logging.getLogger(__name__)
 
+class fleet_vehicle_make(models.Model):
+    
+    _inherit = ['fleet.vehicle.model.brand']
+    
+    used_for_tanking = fields.Boolean(
+        string=u'Is used for tanking?'
+    )
+    
+    
 class fleet_vehicle(models.Model):
     _name = 'fleet.vehicle' # optional
     _inherit = 'fleet.vehicle'
@@ -19,12 +28,221 @@ class fleet_vehicle(models.Model):
     spor_judet_cu_remorca = fields.Integer('Spor municipii/judet cu remorca')
     spor_alte = fields.Integer('Spor celalte orase')
     spor_alte_cu_remorca = fields.Integer('Spor celalte orase cu remorca')
-    status = fields.Boolean('Status', compute="_compute_status")
     tank_capacity = fields.Integer()
     external_carid = fields.Integer()
     sarcina_utila_nominala = fields.Float('Sarcina utila nominala (tone)')
-    def _compute_status(self):
-        return 'm'
+
+    oil_logs_count = fields.Integer(compute="_compute_count_all", string='Oil Logs')
+    in_stock = fields.Float(string=u'In Stock', compute='_compute_count_all')
+    show_stock = fields.Boolean(compute='_compute_show_stock', store=True)
+
+    def _compute_show_stock(self):
+        for record in self:
+            record.show_stock = record.model_id.brand_id.used_for_tanking
+    
+    def _compute_count_all(self):
+        Odometer = self.env['fleet.vehicle.odometer']
+        StockLogFuel = self.env['fleet_fpz.tank.log.fuel']
+        LogFuel = self.env['fleet.vehicle.log.fuel']
+        LogOil = self.env['fleet.vehicle.log.oil']
+        LogService = self.env['fleet.vehicle.log.services']
+        LogContract = self.env['fleet.vehicle.log.contract']
+        Cost = self.env['fleet.vehicle.cost']
+        
+        for record in self:
+            if record.show_stock:
+                stock_since = self.env['ir.values'].search([('name', '=', 'stock_since')])
+                filter_by_date = ('date', '>=', stock_since[0].value_unpickle) if stock_since else None
+                if filter_by_date:
+                    total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id), filter_by_date]))
+                    total_consumed = sum(log.liter for log in StockLogFuel.search([('from_vehicle_id', '=', record.id), filter_by_date]))
+                    record.in_stock = total_fueled - total_consumed
+                else:
+                    total_fueled = sum(log.liter for log in LogFuel.search([('vehicle_id', '=', record.id)]))
+                    total_consumed = sum(log.liter for log in StockLogFuel.search([('from_vehicle_id', '=', record.id)]))
+                    record.in_stock = total_fueled - total_consumed
+
+            record.odometer_count = Odometer.search_count([('vehicle_id', '=', record.id)])
+            record.fuel_logs_count = LogFuel.search_count([('vehicle_id', '=', record.id)])
+            record.oil_logs_count = LogOil.search_count([('vehicle_id', '=', record.id)])
+            record.service_count = LogService.search_count([('vehicle_id', '=', record.id)])
+            record.contract_count = LogContract.search_count([('vehicle_id', '=', record.id)])
+            record.cost_count = Cost.search_count([('vehicle_id', '=', record.id), ('parent_id', '=', False)])
+
+    @api.multi
+    def return_action_to_open(self):
+        """ This opens the xml view specified in xml_id for the current vehicle """
+        self.ensure_one()
+        xml_id = self.env.context.get('xml_id')
+        show_consumed = self.env.context.get('show_consumed')
+        if xml_id:
+            try:
+                res = self.env['ir.actions.act_window'].for_xml_id('fleet', xml_id)    
+            except:
+                res = self.env['ir.actions.act_window'].for_xml_id('fleet_fpz', xml_id)
+             
+            if self.model_id.brand_id.used_for_tanking and show_consumed:
+                stock_since = self.env['ir.values'].search([('name', '=', 'stock_since')])
+                filter_by_date = ('date', '>=', stock_since[0].value_unpickle) if stock_since else None
+                if filter_by_date:
+                    domain = [filter_by_date, '|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
+                else:                    
+                    domain = ['|', ('vehicle_id', '=', self.id), ('from_vehicle_id', '=', self.id)]
+            else:
+                domain = [('vehicle_id', '=', self.id)]
+
+            res.update(
+                context=dict(self.env.context, default_vehicle_id=self.id, group_by=False),
+                domain=domain
+            )
+            return res
+        return False
+    @api.multi
+    def return_my_action_to_open(self):
+        """ This opens the xml view specified in xml_id for the current vehicle """
+        self.ensure_one()
+        xml_id = self.env.context.get('xml_id')
+        if xml_id:
+            res = self.env['ir.actions.act_window'].for_xml_id('fleet_fpz', xml_id)
+            res.update(
+                context=dict(self.env.context, default_vehicle_id=self.id, group_by=False),
+                domain=[('vehicle_id', '=', self.id)]
+            )
+            return res
+        return False
+
+
+class fleet_vehicle_cost(models.Model):
+    _inherit = ['fleet.vehicle.cost']
+    cost_type = fields.Selection([('contract', 'Contract'), ('services', 'Services'), ('fuel', 'Fuel'), ('oil', 'Oil'), ('other', 'Other')],
+        'Category of the cost', default="other", help='For internal purpose only', required=True)
+
+class fleet_tank_log_fuel(models.Model):
+    _name = 'fleet_fpz.tank.log.fuel'
+    _inherit = ['fleet.vehicle.log.fuel']
+
+    from_vehicle_id = fields.Many2one('fleet.vehicle', 'From Vehicle', required=False, help='Vehicle from where was refueled', 
+    domain="[('model_id.brand_id.used_for_tanking','=', True)]",
+    )
+   
+    # liter_stock = fields.Float(
+    #    string=u'Liters in stock', 
+    #    compute='_compute_liter_stock',
+    #    store=False,
+    # )
+
+    # liter_alimentari = fields.Float(
+    #    string=u'Litri alimentati', 
+    #    compute='_compute_liter_alimentari',
+    #    store=True,
+    # )
+    
+    # def _compute_liter_stock(self):
+    #     for record in self:
+    #         record.liter_stock = -record.liter if record.from_vehicle_id else record.liter
+
+    # def _compute_liter_alimentari(self):
+    #     for record in self:
+    #         record.liter_alimentari = (0 if record.vehiche_id.show_stock else record.liter) if record.from_vehicle_id else record.liter
+
+    
+class fleet_vehicle_log_oil(models.Model):
+    _name = 'fleet.vehicle.log.oil'
+    _description = 'Oil log for vehicles'
+    _inherits = {'fleet.vehicle.cost': 'cost_id'}
+
+    @api.model
+    def default_get(self, default_fields):
+        res = super(fleet_vehicle_log_oil, self).default_get(default_fields)
+        service = self.env.ref('fleet.type_service_31', raise_if_not_found=False)
+        res.update({
+            'date': fields.Date.context_today(self),
+            'cost_subtype_id': service and service.id or False,
+            'cost_type': 'oil'
+        })
+        return res
+
+    liter = fields.Float()
+    price_per_liter = fields.Float()
+    purchaser_id = fields.Many2one('res.partner', 'Purchaser', domain="['|',('customer','=',True),('employee','=',True)]")
+    inv_ref = fields.Char('Invoice Reference', size=64)
+    vendor_id = fields.Many2one('res.partner', 'Vendor', domain="[('supplier','=',True)]")
+    notes = fields.Text()
+    cost_id = fields.Many2one('fleet.vehicle.cost', 'Cost', required=True, ondelete='cascade')
+    cost_amount = fields.Float(related='cost_id.amount', string='Amount', store=True)  # we need to keep this field as a related with store=True because the graph view doesn't support (1) to address fields from inherited table and (2) fields that aren't stored in database
+
+    @api.onchange('vehicle_id')
+    def _onchange_vehicle(self):
+        if self.vehicle_id:
+            self.odometer_unit = self.vehicle_id.odometer_unit
+            self.purchaser_id = self.vehicle_id.driver_id.id
+
+    @api.onchange('liter', 'price_per_liter', 'amount')
+    def _onchange_liter_price_amount(self):
+        #need to cast in float because the value receveid from web client maybe an integer (Javascript and JSON do not
+        #make any difference between 3.0 and 3). This cause a problem if you encode, for example, 2 liters at 1.5 per
+        #liter => total is computed as 3.0, then trigger an onchange that recomputes price_per_liter as 3/2=1 (instead
+        #of 3.0/2=1.5)
+        #If there is no change in the result, we return an empty dict to prevent an infinite loop due to the 3 intertwine
+        #onchange. And in order to verify that there is no change in the result, we have to limit the precision of the
+        #computation to 2 decimal
+        liter = float(self.liter)
+        price_per_liter = float(self.price_per_liter)
+        amount = float(self.amount)
+        if liter > 0 and price_per_liter > 0 and round(liter * price_per_liter, 2) != amount:
+            self.amount = round(liter * price_per_liter, 2)
+        elif amount > 0 and liter > 0 and round(amount / liter, 2) != price_per_liter:
+            self.price_per_liter = round(amount / liter, 2)
+        elif amount > 0 and price_per_liter > 0 and round(amount / price_per_liter, 2) != liter:
+            self.liter = round(amount / price_per_liter, 2)
+
+class fleet_contract(models.Model):
+    _inherit = ['fleet.vehicle.log.contract']
+
+    cost_frequency = fields.Selection([('no', 'No'), ('daily', 'Daily'), ('weekly', 'Weekly'), 
+        ('monthly', 'Monthly'), ('twice-a-year', 'Twice a year'), ('quarterly', 'Quarterly'), ('yearly', 'Yearly')], 'Recurring Cost Frequency',
+        default='no', help='Frequency of the recuring cost', required=True)
+    
+    @api.model
+    def scheduler_manage_auto_costs(self):
+        #This method is called by a cron task
+        #It creates costs for contracts having the "recurring cost" field setted, depending on their frequency
+        #For example, if a contract has a reccuring cost of 200 with a weekly frequency, this method creates a cost of 200 on the first day of each week, from the date of the last recurring costs in the database to today
+        #If the contract has not yet any recurring costs in the database, the method generates the recurring costs from the start_date to today
+        #The created costs are associated to a contract thanks to the many2one field contract_id
+        #If the contract has no start_date, no cost will be created, even if the contract has recurring costs
+        VehicleCost = self.env['fleet.vehicle.cost']
+        deltas = {'yearly': relativedelta(years=+1), 'monthly': relativedelta(months=+1), 'twice-a-year': relativedelta(months=+6), 'quarterly': relativedelta(months=+3), 'weekly': relativedelta(weeks=+1), 'daily': relativedelta(days=+1)}
+        contracts = self.env['fleet.vehicle.log.contract'].search([('state', '!=', 'closed')], offset=0, limit=None, order=None)
+        for contract in contracts:
+            if not contract.start_date or contract.cost_frequency == 'no':
+                continue
+            found = False
+            last_cost_date = contract.start_date
+            if contract.generated_cost_ids:
+                last_autogenerated_cost = VehicleCost.search([('contract_id', '=', contract.id), ('auto_generated', '=', True)], offset=0, limit=1, order='date desc')
+                if last_autogenerated_cost:
+                    found = True
+                    last_cost_date = last_autogenerated_cost.date
+                    
+            startdate = fields.Date.from_string(last_cost_date)
+            if found:
+                startdate += deltas.get(contract.cost_frequency)
+            
+            today = fields.Date.from_string(fields.Date.context_today(self))
+            while (startdate <= today) & (startdate <= fields.Date.from_string(contract.expiration_date)):
+                
+                data = {
+                    'amount': contract.cost_generated,
+                    'date': startdate,
+                    'vehicle_id': contract.vehicle_id.id,
+                    'cost_subtype_id': contract.cost_subtype_id.id,
+                    'contract_id': contract.id,
+                    'auto_generated': True
+                }
+                self.env['fleet.vehicle.cost'].create(data)
+                startdate += deltas.get(contract.cost_frequency)
+        return True
 
 class fleet_contract(models.Model):
     _inherit = ['fleet.vehicle.log.contract']
@@ -144,15 +362,10 @@ class foaie_de_parcurs(models.Model):
     date = fields.Date('Data', required=True)
     driver_id = fields.Many2one('res.partner', 'Sofer')
     vehicle_id = fields.Many2one('fleet.vehicle', 'Masina', required=True)
-    fuel_pump = fields.Float('Pompa')
-    fuel_bcf = fields.Float('BCF')
-    fuel_advance = fields.Float('Avans')
-    fuel_total = fields.Float('Total combustibil', compute="_compute_total_fuel", store=True)
-    index_km_start = fields.Float('Plecare')
-    index_km_stop = fields.Float('Sosire')
-    index_km_total = fields.Float('Total parcurs', required=True, compute="_compute_total_km", store=True)
-    km_unknown = fields.Integer('Km necontorizati')
-    gm = fields.Float('Sarcina medie (Tone)')
+    fuel_total = fields.Float('Total combustibil')
+    index_km_total = fields.Float('Total parcurs', required=True)
+    gm = fields.Float('Transport (Tone)')
+    gm_m3 = fields.Float('Transport (m3)')
     road_categories = fields.One2many(
         string="Categorii drum",
         comodel_name="fleet_fpz.parcurs_drum",
@@ -174,11 +387,6 @@ class foaie_de_parcurs(models.Model):
     km_echiv_sporuri = fields.Float(string="Km echiv. sporuri")
     km_echiv_total = fields.Float(string="Total km echiv.", compute='_compute_km_echiv_total')
     
-    @api.depends('km_echiv_parcurs')
-    def _compute_km_echiv_total(self):
-        for record in self:
-            record.km_echiv_total = sum(drum.km_echivalent for drum in record.road_categories)
-
     nr_porniri_opriri = fields.Integer(string="Nr porniri/opriri")
     timp_local = fields.Float(string="Localitate")
     timp_inter = fields.Float(string="Interurban")
@@ -212,6 +420,11 @@ class foaie_de_parcurs(models.Model):
     km_urbani_alte_echiv = fields.Float()
 
     total_km_echiv = fields.Float('Total Km echivalenti')
+   
+    @api.depends('km_echiv_parcurs')
+    def _compute_km_echiv_total(self):
+        for record in self:
+            record.km_echiv_total = sum(drum.km_echivalent for drum in record.road_categories)
 
     @api.multi
     def approve_selected(self):
@@ -258,24 +471,12 @@ class foaie_de_parcurs(models.Model):
                 record.km_de_specificat = record.index_km_total - sum(drum.km for drum in record.road_categories)
                 record.km_de_specificat = record.km_de_specificat if record.km_de_specificat >= 1 else 0
 
-    @api.depends('fuel_pump','fuel_bcf', 'fuel_advance')
-    def _compute_total_fuel(self):
-        for record in self:
-            if record.fuel_pump or record.fuel_bcf or record.fuel_advance:
-                record.fuel_total = record.fuel_pump + record.fuel_bcf + record.fuel_advance
-
-    @api.depends('index_km_stop','index_km_start')
-    def _compute_total_km(self):
-        for record in self:
-            if record.index_km_stop and record.index_km_start:
-                record.index_km_total = record.index_km_stop - record.index_km_start + record.km_unknown
-
     @api.depends('numar','vehicle_id')
     def _compute_name(self):
          for record in self:
             record.name = "%s / %s" % (record.numar, record.vehicle_id.license_plate)
 
-    @api.depends('joja_ant_rezervor','joja_rezervor','fuel_pump','km_echiv_parcurs', 'km_urbani_buc_cu_remorca', 'km_urbani_judet_cu_remorca', 'km_urbani_alte_cu_remorca', 'gm', 'km_urbani_buc', 'km_urbani_judet', 'km_urbani_alte')
+    @api.depends('joja_ant_rezervor','joja_rezervor','fuel_total','km_echiv_parcurs', 'km_urbani_buc_cu_remorca', 'km_urbani_judet_cu_remorca', 'km_urbani_alte_cu_remorca', 'gm', 'km_urbani_buc', 'km_urbani_judet', 'km_urbani_alte')
     def _compute_cn(self):
         for record in self:
             #Coeficientul de corectie "A" are valoarea 1,1 si se aplica de regula in perioada 1 decembrie - 15 martie.

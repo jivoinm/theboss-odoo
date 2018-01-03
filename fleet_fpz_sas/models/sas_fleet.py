@@ -1,28 +1,50 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
-#from urllib2 import Request, urlopen
-#from urllib.request import urlopen
-
+from urllib2 import Request, urlopen
 from dateutil import tz
 import requests, json, logging, datetime, os.path
-import sys, traceback
+import sys, traceback, time
 from math import cos, asin, sqrt
 from dateutil.parser import parse as parse_date
 
 _logger = logging.getLogger(__name__)
 
-#reload(sys)
-#sys.setdefaultencoding('utf-8')
-class car_import(models.AbstractModel):
-    _name = "fleet_fpz.car_import"
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
-    website = 'www22.alarma.ro'
-    username = 'frasinuldwn'
-    password = '12345'
+PARAMS = [
+    ("login", "sas_server.login"),
+    ("password", "sas_server.password"),
+    ("culture", "sas_server.culture"),
+    ("version", "sas_server.version"),
+    ("server_url", "sas_server.server_url"),
+]
 
-    api_key = "40789C4685884267B0265B6379F595D9"
-    api_base_url = "https://fms.vodafone.ro/_layouts/15/S2/WebApi/StandardApi/";
+class SasSettings(models.TransientModel):
+    _name = 'sas_fleet.settings'
+    _inherit = 'res.config.settings'
 
+    login = fields.Char("Login")
+    password = fields.Char("Password")
+    culture = fields.Char("Culture")
+    version = fields.Char("Version")
+    server_url = fields.Char("Server URL")
+
+    @api.multi
+    def set_params(self):
+        self.ensure_one()
+
+        for field_name, key_name in PARAMS:
+            value = getattr(self, field_name, '')
+            self.env['ir.config_parameter'].set_param(key_name, value)
+
+    def get_default_params(self, fields):
+        res = {}
+        for field_name, key_name in PARAMS:
+            res[field_name] = self.env['ir.config_parameter'].get_param(key_name, '').strip()
+        return res
+    
+    server_params = {}
     from_zone = tz.tzutc()
     to_zone = tz.tzlocal()
     basepath = os.path.dirname(__file__)
@@ -36,13 +58,18 @@ class car_import(models.AbstractModel):
           'Content-Type': 'application/json',
           'Token': token
         }
-        url = "https://%s/SASFleetService/api/info" % self.website
-        response_body = requests.get(url, params={'api-version': '1.0'}, headers=headers)
-        return Payload(response_body.content)
+        url = "%s/SASFleetService/api/info" % self.server_params.get("server_url")
+        
+        response_body = requests.get(url, params={'api-version': self.server_params.get("version")}, headers=headers)
+        return Payload(response_body.text)
+
     @api.model
     def import_cars_alarme(self):
+        """ Import new cars from SAS if it's not already found
+        """
         token = self.alarme_login()
         payload = self.get_alarme_cars(token)
+        _logger.info('Import SAS Fleet Cars')
         #create company
         companies = {}
         gps_tag = 'alarme'
@@ -61,54 +88,42 @@ class car_import(models.AbstractModel):
             model = self.env['fleet.vehicle.model'].search([['name', '=', car_details.modelName], ['brand_id', '=', brand_id]], limit=1) or self.env['fleet.vehicle.model'].create({'name': car_details.modelName, 'brand_id': brand_id})
             #create or update cars
             self.import_cars(car['driver'], car['licensePlate'], model, car_details.currentKmIndex, car_details.tankCapacity, companies[car['companyId']], car_details.vin, wp[0], datetime.datetime(year=car_details.year, month=1, day=1), [(4,[alarme_tag_id])], car['carId'])
-
-
+            time.sleep(5) #wait 5 sec
 
     def alarme_load_car_details(self, token, carId):
-        url = "https://%s/SASFleetService/api/car/carDetails" % self.website
+        """ Load car details 
+        """
+        url = "%s/SASFleetService/api/car/carDetails" % self.server_params.get("server_url")
         headers = {
           'Content-Type': 'application/json',
           'Token': token
         }
-        response_body = requests.post(url, params={'api-version': '1.0'}, headers=headers, data=str(carId))
+        response_body = requests.post(url, params={'api-version': self.server_params.get("version")}, headers=headers, data=str(carId))
         car_details = Payload(response_body.content)
         return car_details
 
     def alarme_login(self):
+        """ Login to SAS Fleet and get the token
+        """
+        self.server_params = self.get_default_params(None)
+        if not self.server_params.get("login"): return
         values = {
-            "user": self.username,
-            "password": self.password,
-            "culture": "ro-RO"
+            "user": self.server_params.get("login"),
+            "password": self.server_params.get("password"),
+            "culture": self.server_params.get("culture")
           }
 
         headers = {
           'Content-Type': 'application/json'
         }
-        url = "https://%s/SASFleetService/api/login" % self.website
+        url = "%s/SASFleetService/api/login" % self.server_params.get("server_url")
         values = json.dumps(values, sort_keys=True, indent=4, separators=(',', ': '))
-        response_body = requests.post(url, params={'api-version': '1.0'}, headers=headers, data=values)
+        response_body = requests.post(url, params={'api-version': self.server_params.get("version")}, headers=headers, data=values)
         return response_body.headers['Token']
 
-    @api.model
-    def import_cars_fms(self):
-        url = self.api_base_url + "GetVehicles.ashx"
-        response_body = requests.post(url, params={'accessToken': self.api_key, 'format':'json'})
-        cars = json.loads(response_body.content)
-        gps_tag = 'fms vodafone'
-        fms_tag_id = self.env['fleet.vehicle.tag'].search([['name', '=', gps_tag]], limit=1).id or self.env['fleet.vehicle.tag'].create({'name': gps_tag}).id
-        for car in cars:
-            company_id = self.env['res.company'].search([['name', '=ilike', car['Group']]], limit=1).id or self.env['res.company'].create({'name': car['Group']}).id
-            brand_id = self.env['fleet.vehicle.model.brand'].search([['name', '=', car['Mark']]], limit=1).id or self.env['fleet.vehicle.model.brand'].create({'name': car['Mark']}).id
-            model = self.env['fleet.vehicle.model'].search([['name', '=', car['Model']], ['brand_id', '=', brand_id]], limit=1) or self.env['fleet.vehicle.model'].create({'name': car['Model'], 'brand_id': brand_id})
-            self.import_cars(None, car['VehiclePlate'], model, None, None, company_id, None, None, None, [(4,[fms_tag_id])])
-        #import drivers
-        url = self.api_base_url + "GetDrivers.ashx"
-        response_body = requests.post(url, params={'accessToken': self.api_key, 'format':'json'})
-        drivers = json.loads(response_body.content)
-        for driver in drivers:
-            self.create_driver_employee(driver['DriverName'])
-
     def import_cars(self, driver_name, license_plate, model, current_km, tank_capacity, company_id, vin, location, acquisition_date, tags, car_id=None):
+        """ Create new fleet vehicle
+        """
         vehicle = self.env['fleet.vehicle'].search([['license_plate', '=', license_plate]], limit=1)
         if not vehicle.id:
             #create driver
@@ -148,7 +163,10 @@ class car_import(models.AbstractModel):
         return driver_id
 
     def import_gps_alerts_alarme(self, data, carId):
+        """ Process Alerts received from SAS for a car
+        """
         token = self.alarme_login()
+        _logger.info('SAS Fleet Sync GPS')
         headers = {
           'Content-Type': 'application/json',
           'Token': token
@@ -162,9 +180,8 @@ class car_import(models.AbstractModel):
             "carId": """+ str(carId) +"""
           }
         """
-        url = "https://%s/SASFleetService/api/reports/events" % self.website
-        response_body = requests.post(url, params={'api-version': '1.0'}, headers=headers, data=values)
-        #print response_body.content
+        url = "%s/SASFleetService/api/reports/events" % self.server_params.get("server_url")
+        response_body = requests.post(url, params={'api-version': self.server_params.get("version")}, headers=headers, data=values)
         self.initArray(data, ['fueled'])
         alert_prev = None
         fueled_alerts = []
@@ -174,21 +191,21 @@ class car_import(models.AbstractModel):
         for alert in json.loads(response_body.content):
             time_on_road = parse_date(alert['date']) - parse_date(alert_prev['date']) if alert_prev else 0
             dist = dist + self.distance(alert['latitude'], alert['longitude'],alert_prev['latitude'], alert_prev['longitude']) if alert_prev else 0
-#            print "fuelLevel=%s|fuelLevel_prev=%s|speed1=%s|speed2=%s|dist=%s|time_on_road=%s|event=%s" % (alert['fuelLevel'], fuelLevel, alert['speed'], alert_prev['speed'] if alert_prev else 0, dist, time_on_road, alert['triggerEvent'])
             fuel_dif = alert['fuelLevel'] - fuelLevel
             if alert['triggerEvent'] == 6 and fuelLevel < alert['fuelLevel'] and fuel_dif>10:
                 fuelAdded = fuelAdded + alert['fuelLevel'] - fuelLevel
                 fueled_alerts.append(alert)
-                #print "fuelLevel_dif=%s|fuelAdded=%s|event=%s" % (fuel_dif,fuelAdded, alert['triggerEvent'])
             if alert['triggerEvent'] == 6:
                 data['nr_porniri_opriri'] = data['nr_porniri_opriri'] + 1 if 'nr_porniri_opriri' in data else 1
             alert_prev = alert
             fuelLevel = alert['fuelLevel']
-        #print "carId=%s|Comb total=%s lit|De=%s ori|total dist=%s" % (carId, fuelAdded, len(fueled_alerts), dist)
+        _logger.debug("carId=%s|Comb total=%s lit|De=%s ori|total dist=%s" % (carId, fuelAdded, len(fueled_alerts), dist))
         data['fueled'] = fuelAdded
 
     @api.model
     def import_gps_alarme(self, days_to_process=1):
+        """ Sync GPS, import travel sheet from SAS Fleet
+        """
         token = self.alarme_login()
         alarme_car_details = self.get_alarme_cars(token)
 
@@ -210,87 +227,35 @@ class car_import(models.AbstractModel):
                     "carId": """+ str(car['carId']) +"""
                   }
                 """
-                #print values
-                url = "https://%s/SASFleetService/api/reports/travelsheet" % self.website
+                url = "%s/SASFleetService/api/reports/travelsheet" % self.server_params.get("server_url")
                 try:
-                    response_body = requests.post(url, params={'api-version': '1.0'}, headers=headers, data=values)
-                    payload = Payload(response_body.content)
-                    #print "%s|TotalKM=%s|WorkTime=%s|Idle=%s" % (payload.licensePlate, payload.totalDistance, payload.workTimeSpanInSeconds, payload.idleTimeSpanInSeconds)
-                    data = {}
-                    self.initArray(data, ['buc', 'mun', 'alte', 'D1', 'D2','D3','D4','D6', 'trasee', 'trasee_gps', 'timp_local', 'timp_inter', 'timp_inc_desc'])
-                    for segment in payload.segments:
-                        #print "index=%s, fuelLevel=%s, fueled=%s" % (segment['indexId'], segment['fuelLevel'], segment['fueled'])
-                        self.collect_gps(data, parse_date(segment['dateStart']), parse_date(segment['dateEnd']), segment['addressStart'], segment['addressEnd'], segment['cityStart'], segment['cityEnd'],\
-                         segment['countyStart'].replace(' (RO)', ''), segment['countyEnd'].replace(' (RO)', ''), self.toFloat(segment['distance']), segment['latitudeStart'], segment['latitudeEnd'], \
-                         segment['longitudeStart'], segment['longitudeEnd'], segment['averageSpeed'])
+                    response_body = requests.post(url, params={'api-version': self.server_params.get("version")}, headers=headers, data=values)
+                    if response_body.status_code == 200:
+                        payload = Payload(response_body.content)
+                        _logger.debug("%s|TotalKM=%s|WorkTime=%s|Idle=%s" % (payload.licensePlate, payload.totalDistance, payload.workTimeSpanInSeconds, payload.idleTimeSpanInSeconds))
+                        data = {}
+                        self.initArray(data, ['buc', 'mun', 'alte', 'D1', 'D2','D3','D4','D6', 'trasee', 'trasee_gps', 'timp_local', 'timp_inter', 'timp_inc_desc'])
+                        for segment in payload.segments:
+                            self.collect_gps(data, parse_date(segment['dateStart']), parse_date(segment['dateEnd']), segment['addressStart'], segment['addressEnd'], segment['cityStart'], segment['cityEnd'],\
+                            segment['countyStart'].replace(' (RO)', ''), segment['countyEnd'].replace(' (RO)', ''), self.toFloat(segment['distance']), segment['latitudeStart'], segment['latitudeEnd'], \
+                            segment['longitudeStart'], segment['longitudeEnd'], segment['averageSpeed'])
 
-                    self.import_gps_alerts_alarme(data, car['carId'])
-                    local_time = sum(item for item in data['timp_local'])
-                    inter_time = sum(item for item in data['timp_inter'])
-                    timp_inc_desc = sum(item for item in data['timp_inc_desc'])
-                    total_work_time = local_time + inter_time
-                    self.write_faz(faz_date, data, payload.totalDistance, payload.licensePlate, local_time, inter_time, total_work_time, timp_inc_desc, data['nr_porniri_opriri'] if 'nr_porniri_opriri' in data else 0)
-
+                        self.import_gps_alerts_alarme(data, car['carId'])
+                        local_time = sum(item for item in data['timp_local'])
+                        inter_time = sum(item for item in data['timp_inter'])
+                        timp_inc_desc = sum(item for item in data['timp_inc_desc'])
+                        total_work_time = local_time + inter_time
+                        self.write_faz(faz_date, data, payload.totalDistance, payload.licensePlate, local_time, inter_time, total_work_time, timp_inc_desc, data['nr_porniri_opriri'] if 'nr_porniri_opriri' in data else 0)
+                        time.sleep(5) #wait 5 sec
+                    else:
+                        _logger.error("Didnt got OK from the server for values %s" % (values))
                 except Exception:
-                    #pass
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    #print "*** print_tb:"
-                    #traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
-                    #print "*** print_exception:"
-                    traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout)
-    @api.model
-    def import_gps_fms(self, days_to_process=1):
-        url = self.api_base_url + "GetVehicles.ashx"
-        response_body = requests.post(url, params={'accessToken': self.api_key, 'format':'json'})
-        cars = json.loads(response_body.content)
+                    _logger.exception("Exception processing travelsheet for url %s and values %s" % (url, values))
 
-        start_date = datetime.datetime.today() - datetime.timedelta(days=days_to_process)
-        end_date = start_date + datetime.timedelta(days=1)
-
-        for faz_date in self.daterange(start_date, end_date):
-            for car in cars:
-                start_date_time = faz_date.strftime("%Y%m%d 00:00:00")
-                end_date_time = faz_date.strftime("%Y%m%d 23:59:59")
-
-                url = self.api_base_url + "GetVehicleTracks.ashx"
-                try:
-                    query_params = {'accessToken': self.api_key, 'format':'json',
-                    'plateNumber': car['VehiclePlate'],
-                    'startDateTime': start_date_time,
-                    'endDateTime': end_date_time,
-                    }
-                    #print "query_params=%s" % query_params
-                    response_body = requests.post(url, params = query_params)
-
-                    car_tracks = json.loads(response_body.text)
-                    #print "car_tracks %s" % car_tracks
-                    data = {}
-                    self.initArray(data, ['buc', 'mun', 'alte', 'D1', 'D2','D3','D4','D6', 'trasee', 'trasee_gps', 'timp_local', 'timp_inter', 'timp_inc_desc'])
-                    totalDistance = 0
-                    for segment in car_tracks:
-                        addressStart = [self.clean_diacritice(address.strip()) for address in segment['AddressStart'].split(',')]
-                        addressStop = [self.clean_diacritice(address.strip()) for address in segment['AddressStop'].split(',')]
-                        distance = self.toFloat(segment['DistanceMeters']) / 1000
-                        totalDistance = totalDistance + distance
-                        startDateTime = datetime.datetime.strptime(segment['StartDateTime'], '%Y-%m-%dT%H:%M:%S')
-                        endDateTime = datetime.datetime.strptime(segment['EndDateTime'], '%Y-%m-%dT%H:%M:%S')
-                        self.collect_gps(data, startDateTime, endDateTime, addressStart[0], addressStop[0], addressStart[1], addressStop[1], addressStart[2], addressStop[2], distance, segment['LatitudeStart'], segment['LatitudeStop'], segment['LongitudeStart'], segment['LongitudeStop'], None)
-
-                    local_time = sum(item for item in data['timp_local'])
-                    inter_time = sum(item for item in data['timp_inter'])
-                    timp_inc_desc = sum(item for item in data['timp_inc_desc'])
-                    total_work_time = local_time + inter_time
-                    self.write_faz(faz_date, data, totalDistance, car['VehiclePlate'], local_time, inter_time, total_work_time, timp_inc_desc)
-                except Exception:
-                    #pass
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    #print "*** print_tb:"
-                    #traceback.print_tb(exc_traceback, limit=4, file=sys.stdout)
-                    #print "*** print_exception:"
-                    traceback.print_exception(exc_type, exc_value, exc_traceback, limit=4, file=sys.stdout)
 
     def write_faz(self, faz_date, data, totalDistance, licensePlate, local_time=0, inter_time=0, total_work_time=0, timp_inc_desc=0, nr_porniri_opriri=0):
-        #print sum(item.dist for item in data['mun']) + sum(item.dist for item in data['alte'])
+        """ Create new FAZ with collected details
+        """
         d1 = sum(item for item in data['D1'])
         d2 = sum(item for item in data['D2'])
         d6 = sum(item for item in data['D6'])
@@ -301,7 +266,6 @@ class car_import(models.AbstractModel):
         mun_km = sum(item.dist for item in data['mun'])
         alte_km = sum(item.dist for item in data['alte'])
 
-        #print "local_time=%s|interurban=%s|WorkTime=%s|timp_inc_desc=%s|nr_porniri_opriri=%s" % (local_time, inter_time, total_work_time, timp_inc_desc, nr_porniri_opriri)
         vehicle = self.env['fleet.vehicle'].search([['license_plate', '=', licensePlate]], limit=1)
         if vehicle.id:
             foaie_de_parcurs = self.env['fleet_fpz.foaie_de_parcurs'].search([
@@ -332,13 +296,9 @@ class car_import(models.AbstractModel):
             'fuel_pump': data['fueled'] if 'fueled' in data else 0
             })
 
-            #print "found vehicle %s - %s" % (vehicle.name, foaie_de_parcurs.numar)
-        else:
-            "not found vehicle {0:s}".format(licensePlate)
     def get_road_categories(self, road_categories):
         road_category_ids = [(6, 0,  [self.env['fleet_fpz.parcurs_drum'].create({'km': cat['total'], 'categorie_drum_id': \
             self.env['fleet_fpz.categorie_drum'].search([['coeficient', '=', cat['name']]], limit=1).id}).id for cat in road_categories])]
-        #print "get_road_categories=%s" % road_category_ids
         return road_category_ids
 
     def get_trasee(self, trasee):
@@ -354,22 +314,18 @@ class car_import(models.AbstractModel):
             'dist': traseu['dist'],
             'viteza': traseu['viteza'],
             }).id for traseu in trasee]
-        #print "array_trasee %s" % array_trasee
         trasee_ids = [(6, 0, array_trasee)]
-
         return trasee_ids
 
     def collect_gps(self, data, start_date, end_date, address_start, address_stop, city_start, city_stop, county_start, county_stop, dist, lat_start, lat_stop, lon_start, lon_stop, speed):
+        """ Calculate GPS and sort out the road categories
+        """
         self.collect_spor_urban(data, start_date, end_date,address_start, address_stop, city_start, city_stop, county_start, county_stop, dist, lat_start, lon_start)
         #calculate speed when distance > 1km
-
         if not speed and dist > 1:
-            #print "end_date=%s - start_date=%s = %s sec" % (end_date, start_date, (end_date - start_date).seconds)
             speed = dist / (float((end_date - start_date).seconds) / 3600)
-            #print "calculated speed = %s km/h" % (speed)
-        #print "address_start=%s address_stop=%s city_start=%s city_stop=%s|speed=%s|dist=%s|timp=%s" % (address_start, address_stop, city_start, city_stop,speed, dist,(end_date - start_date).seconds)
         if speed > 5:
-            if speed < 25 and dist>10 and (city_start=='-' or city_start=='' or city_end=='-' or city_end==''):
+            if speed < 25 and dist>10 and (city_start=='-' or city_start=='' or city_stop=='-' or city_stop==''):
                 data['D4'].append(dist)
             elif (city_start != '-' or city_start != '') and (city_stop != '-' or city_stop != '')\
                 and (address_start != '-' or address_start != '') and (address_stop != '-' or address_stop != ''):
@@ -405,15 +361,14 @@ class car_import(models.AbstractModel):
                 })
 
     def collect_spor_urban(self, data, start_date, end_date, address_start, address_stop, city_start, city_stop, county_start, county_stop, dist, lat, lon):
+        """ Calculate urban area
+        """
         spor = SporCirculatieUrbana(start_date, end_date, address_start, address_stop, city_start, city_stop, county_start, county_stop, dist)
         if (city_start != '-' or city_start != '') and (city_stop != '-' or city_stop != ''):
             #aceasi adresa
             judet_oras = self.closest(self.judete_orase, {'lat': lat, 'lon': lon})
-            #print "%s - [%s, %s]" % (county_start, judet_oras[0], judet_oras[1])
             if county_start in self.judete_orase or county_start.lower() == judet_oras[0].lower():
-                #print "judet %s found in %s" % (county_start, judet_oras[0])
                 if city_start in self.judete_orase[judet_oras[0]] or city_start.lower() == judet_oras[1].lower():
-                    #print "%s found in %s" % (city_start, judet_oras[1])
                     if city_start == 'Bucuresti':
                         #bucuresti
                         data['buc'].append(spor)
@@ -423,9 +378,7 @@ class car_import(models.AbstractModel):
                 else:
                     #alte or
                     data['alte'].append(spor)
-                    #print "oras %s not found in %s" % (city_start, judet_oras[1])
             else:
-                #print "judet %s not found in %s" % (county_start, judet_oras[0])
                 data['alte'].append(spor)
 
     def from_utc(self, date):
@@ -475,7 +428,6 @@ class car_import(models.AbstractModel):
         m, s = divmod(seconds, 60)
         h, m = divmod(m, 60)
         hours = float(h + (float(m) / 60))
-        #print "%s:%s = %s" % (h, m, hours)
         return hours
     def initArray(self, data, properties):
         for prop in properties:
