@@ -3,7 +3,7 @@
     'name': "The Boss SAS Fleet integration",
 
     'summary': """
-        SAS Fleet integration""",
+        SAS Fleet integration and GPS sync""",
 
     'description': """
         Car import from SAS Fleet and GPS sync

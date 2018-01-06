@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
-from urllib2 import Request, urlopen
+
 from dateutil import tz
 import requests, json, logging, datetime, os.path
 import sys, traceback, time
@@ -8,9 +8,6 @@ from math import cos, asin, sqrt
 from dateutil.parser import parse as parse_date
 
 _logger = logging.getLogger(__name__)
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 PARAMS = [
     ("login", "sas_server.login"),
@@ -31,14 +28,14 @@ class SasSettings(models.TransientModel):
     server_url = fields.Char("Server URL")
 
     @api.multi
-    def set_params(self):
+    def set_values(self):
         self.ensure_one()
 
         for field_name, key_name in PARAMS:
             value = getattr(self, field_name, '')
             self.env['ir.config_parameter'].set_param(key_name, value)
 
-    def get_default_params(self, fields):
+    def get_values(self):
         res = {}
         for field_name, key_name in PARAMS:
             res[field_name] = self.env['ir.config_parameter'].get_param(key_name, '').strip()
