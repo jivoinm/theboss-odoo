@@ -26,6 +26,7 @@
         'security/ir.model.access.csv',
         'views/faz_seq.xml',
         'views/views.xml',
+        'views/faz_board_view.xml',
         'views/templates.xml',
         'data/data.xml',
     ],

@@ -167,7 +167,41 @@
               </tree>
           </field>
     </record>
-
+    <record id='fleet_fpz_report_consum_pivot' model='ir.ui.view'>
+            <field name="name">fleet_fpz.report.consum.pivot</field>
+            <field name="model">fleet_fpz.report.consum</field>
+            <field name="arch" type="xml">
+                <pivot string="Alimentari">
+                    <field name="name" type="row"/>
+                    <field name="liters_fill_in" type="measure"/>
+                    <field name="liters_fill_out" type="measure"/>
+                </pivot>
+            </field>
+    </record>
+    <record id="fleet_fpz_report_consum_pivot_search" model="ir.ui.view">
+        <field name="name">fleet_fpz.report.consum.pivot</field>
+        <field name="model">fleet_fpz.report.consum</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search string="Intrari-Iesiri">
+               <filter string="Luna curenta" icon="terp-accessories-archiver" domain="[('date', '>=', datetime.date.today().replace(day=1).strftime('%Y-%m-%d'))]"/>
+            </search>
+        </field>
+    </record>
+    <record id="fleet_fpz_report_consum_pivot_tree" model="ir.ui.view">
+        <field name="name">fleet_fpz.report.consum.tree</field>
+        <field name="model">fleet_fpz.report.consum</field>
+        <field name="view_mode">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Alimentari" create="false" edit="false" editable="bottom">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="used_for_tanking"/>
+                <field name="liters_fill_in"/>
+                <field name="liters_fill_out"/>
+            </tree>
+        </field>
+    </record>
     <record id="fleet_fpz_fleet_vehicle_fuel_view_search" model="ir.ui.view">
         <field name="name">fleet.vehicle.log.fuel.form</field>
         <field name="model">fleet.vehicle.log.fuel</field>
@@ -384,6 +418,8 @@
                 <field name="date"/>
                 <field name="vehicle_id"/>
                 <field name="driver_id"/>
+                <field name="gm"/>
+                <field name="gm_m3"/>
                 <field name="fuel_total"/>
                 <field name="index_km_total"/>
                 <field name="km_echiv_total"/>
@@ -547,7 +583,7 @@
               </p>
             </field>
         </record>
-        
+    
         <menuitem action="fleet_vehicle_log_oil_action" parent="fleet.fleet_vehicles" id="fleet_vehicle_log_oil_menu"/>
         <menuitem action="fleet_fpz_tank_log_fuel_action" parent="fleet.fleet_vehicles" id="fleet_tank_log_menu"/>
 
