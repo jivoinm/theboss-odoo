@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-import logging, datetime
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError, ValidationError
+import datetime
+import logging
+
 from dateutil.relativedelta import relativedelta
+from odoo import _, api, fields, models, tools
+from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -124,27 +126,6 @@ class fleet_tank_log_fuel(models.Model):
     from_vehicle_id = fields.Many2one('fleet.vehicle', 'From Vehicle', required=False, help='Vehicle from where was refueled', 
     domain="[('model_id.brand_id.used_for_tanking','=', True)]",
     )
-   
-    # liter_stock = fields.Float(
-    #    string=u'Liters in stock', 
-    #    compute='_compute_liter_stock',
-    #    store=False,
-    # )
-
-    # liter_alimentari = fields.Float(
-    #    string=u'Litri alimentati', 
-    #    compute='_compute_liter_alimentari',
-    #    store=True,
-    # )
-    
-    # def _compute_liter_stock(self):
-    #     for record in self:
-    #         record.liter_stock = -record.liter if record.from_vehicle_id else record.liter
-
-    # def _compute_liter_alimentari(self):
-    #     for record in self:
-    #         record.liter_alimentari = (0 if record.vehiche_id.show_stock else record.liter) if record.from_vehicle_id else record.liter
-
     
 class fleet_vehicle_log_oil(models.Model):
     _name = 'fleet.vehicle.log.oil'
@@ -576,3 +557,64 @@ class foaie_de_parcurs(models.Model):
             vals = {}
         vals['numar'] = self.env['ir.sequence'].next_by_code('fleet_fpz.foaie_de_parcurs_nr')
         return super(foaie_de_parcurs, self).create(vals)
+
+
+class ReportConsum(models.Model):
+    """ Fuel Consumption report
+    """
+
+    _name = 'fleet_fpz.report.consum'
+    _description = u'Fuel Consumption report'
+    
+    _order = 'name ASC'
+    _auto = False
+
+    name = fields.Char(string='Name', readonly=True)
+    date = fields.Date(string='Date fill', readonly=True)
+    liters_fill_in = fields.Float(string='Liters fill in', digits=(16,2), readonly=True)
+    liters_fill_out = fields.Float(string='Liters fill out', digits=(16,2), readonly=True)
+    used_for_tanking = fields.Boolean(string='Is used for tanking?', digits=(16,2), readonly=True)
+
+    def custom_funct_date(self, cr, uid, context=None):
+        # print "make sure that this action is called from th server action "
+        # compute you date
+        date_to_filter = ((context_today()-datetime.timedelta(days=60)).strftime('%Y-%m-%d'))
+        print("date to filter %s".format(date_to_filter))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Raport de consum',
+            'view_type': 'form',
+            'view_mode': 'pivot',
+            'res_model': 'fleet_fpz.report.consum',
+            'domain': [('date', '>=', date_to_filter)],
+            # if you don't want to specify form for example
+            # (False, 'form') just pass False 
+            'views': [(False, 'form')],
+            'target': 'current',
+            'context': context,
+        }
+
+    def _select(self):
+        select_str = """
+select fleet_vehicle.id, fleet_vehicle.name,fleet_vehicle_cost.date, 
+sum(fleet_vehicle_log_fuel.liter) as liters_fill_in, 
+sum(fleet_fpz_tank_log_fuel.liter) as liters_fill_out,
+fleet_vehicle_model_brand.used_for_tanking
+from fleet_vehicle
+inner join fleet_vehicle_cost on fleet_vehicle.id = fleet_vehicle_cost.vehicle_id
+inner join fleet_vehicle_model on fleet_vehicle.model_id = fleet_vehicle_model.id
+inner join fleet_vehicle_model_brand on fleet_vehicle_model.brand_id = fleet_vehicle_model_brand.id
+left outer join fleet_vehicle_log_fuel on fleet_vehicle_cost.id = fleet_vehicle_log_fuel.cost_id
+left outer join fleet_fpz_tank_log_fuel on fleet_vehicle.id = fleet_fpz_tank_log_fuel.from_vehicle_id
+where fleet_vehicle_cost.date is not null
+group by fleet_vehicle.id, fleet_vehicle.name, fleet_vehicle_cost.date, fleet_vehicle_model_brand.used_for_tanking
+
+        """
+        return select_str
+
+    def init(self):
+        tools.drop_view_if_exists(self._cr, self._table)
+        self._cr.execute("""
+            CREATE view %s as
+              %s
+        """ % (self._table, self._select()))
