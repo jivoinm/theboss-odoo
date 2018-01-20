@@ -69,5 +69,4 @@ docs/_build/
 .cprofile_*
 node_modules
 package-lock.json
-fleet_fpz.tar.gz
-theboss_exploatare_lemn.tar.gz
+*.tar.gz
