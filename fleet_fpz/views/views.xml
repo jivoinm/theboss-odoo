@@ -179,20 +179,6 @@
                 </pivot>
             </field>
     </record>
-    <!-- <record id="fleet_fpz_report_consum_pivot_tree" model="ir.ui.view">
-        <field name="name">fleet_fpz.report.consum.tree</field>
-        <field name="model">fleet_fpz.report.consum</field>
-        <field name="view_mode">tree</field>
-        <field name="arch" type="xml">
-            <tree string="Alimentari" create="false" edit="false" editable="bottom">
-                <field name="name"/>
-                <field name="date"/>
-                <field name="liters_fill_in"/>
-                <field name="liters_fill_out"/>
-                <field name="liters_oil"/>
-            </tree>
-        </field>
-    </record> -->
     <record id="fleet_fpz_fleet_vehicle_fuel_view_search" model="ir.ui.view">
         <field name="name">fleet.vehicle.log.fuel.form</field>
         <field name="model">fleet.vehicle.log.fuel</field>
