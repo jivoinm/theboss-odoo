@@ -573,7 +573,7 @@ class ReportConsum(models.Model):
     date = fields.Date(string='Date fill', readonly=True)
     liters_fill_in = fields.Float(string='Liters fill in', digits=(16,2), readonly=True)
     liters_fill_out = fields.Float(string='Liters fill out', digits=(16,2), readonly=True)
-    used_for_tanking = fields.Boolean(string='Is used for tanking?', digits=(16,2), readonly=True)
+    liters_oil = fields.Float(string='Liters oil', digits=(16,2), readonly=True)
 
     def custom_funct_date(self, cr, uid, context=None):
         # print "make sure that this action is called from th server action "
@@ -597,18 +597,18 @@ class ReportConsum(models.Model):
     def _select(self):
         select_str = """
 select fleet_vehicle.id, fleet_vehicle.name,fleet_vehicle_cost.date, 
-sum(fleet_vehicle_log_fuel.liter) as liters_fill_in, 
-sum(fleet_fpz_tank_log_fuel.liter) as liters_fill_out,
-fleet_vehicle_model_brand.used_for_tanking
+COALESCE(fleet_vehicle_log_fuel.liter,0) + COALESCE(fuel_in.liter,0) as liters_fill_in, 
+fuel_out.liter as liters_fill_out,
+fleet_vehicle_log_oil.liter as liters_oil
 from fleet_vehicle
 inner join fleet_vehicle_cost on fleet_vehicle.id = fleet_vehicle_cost.vehicle_id
 inner join fleet_vehicle_model on fleet_vehicle.model_id = fleet_vehicle_model.id
 inner join fleet_vehicle_model_brand on fleet_vehicle_model.brand_id = fleet_vehicle_model_brand.id
+left outer join fleet_vehicle_log_oil on fleet_vehicle_cost.id = fleet_vehicle_log_oil.cost_id
 left outer join fleet_vehicle_log_fuel on fleet_vehicle_cost.id = fleet_vehicle_log_fuel.cost_id
-left outer join fleet_fpz_tank_log_fuel on fleet_vehicle.id = fleet_fpz_tank_log_fuel.from_vehicle_id
+left outer join fleet_fpz_tank_log_fuel fuel_out on fleet_vehicle.id = fuel_out.from_vehicle_id
+left outer join fleet_fpz_tank_log_fuel fuel_in on fleet_vehicle.id = fleet_vehicle_cost.vehicle_id and fuel_in.cost_id = fleet_vehicle_cost.id
 where fleet_vehicle_cost.date is not null
-group by fleet_vehicle.id, fleet_vehicle.name, fleet_vehicle_cost.date, fleet_vehicle_model_brand.used_for_tanking
-
         """
         return select_str
 
