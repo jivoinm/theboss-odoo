@@ -1,0 +1,68 @@
+<odoo>
+  <data>
+   <record id="hr_recruitment_stage_form" model="ir.ui.view">
+      <field name="name">hr.recruitment.stage.form</field>
+      <field name="model">hr.recruitment.stage</field>
+      <field name="inherit_id" ref="hr_recruitment.hr_recruitment_stage_form"/>
+      <field name="arch" type="xml">
+          <!-- Add your fields or attributes here -->
+          <xpath expr="//group" position="after">
+             <group string="Stage notification">
+              <group>
+                <field name="max_days_waiting"/>
+              </group>
+              <group>
+                <field name="email_template_id"/>
+              </group>
+             </group>
+          </xpath>
+      </field>
+    </record>
+    <record id="crm_case_form_view_job_inherit" model="ir.ui.view">
+        <field name="name">hr.applicant.form.inherit</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.crm_case_form_view_job"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_makeMeeting']" position="after">
+                <button name="action_start_survey"
+                    class="oe_stat_button"
+                    icon="fa-user"
+                    type="object"
+                    help="Answer related job question"
+                    context="{'survey_id': stage_interview_id}"
+                    attrs="{'invisible':[('stage_interview_id','=',False)]}">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Start</span>
+                        <field name="stage_interview_id" class="o_stat_text"/>
+                    </div>
+                </button>
+                <button name="action_print_survey"
+                    class="oe_stat_button"
+                    icon="fa-print"
+                    type="object"
+                    help="Print interview report"
+                    attrs="{'invisible':[('response_id','=',False)]}">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Sore</span>
+                        <field name="score" class="o_stat_text"/>
+                    </div>
+                </button>
+                <button name="action_generate_documents"
+                    class="oe_stat_button"
+                    icon="fa-gears"
+                    type="object"
+                    help="Generate template documents"
+                   >
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">HR doc</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='job_id']" position="before">
+                <field name="stage_interview_id" invisible="1"/>
+                <field name="response_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+  </data>
+</odoo>

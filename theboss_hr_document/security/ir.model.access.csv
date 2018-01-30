@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+theboss_hr_document_hr_manager,HR Document - HR Officer,model_hr_document,hr_recruitment.group_hr_recruitment_manager,1,1,1,1
+theboss_hr_document_hr_officer,HR Document - HR Officer,model_hr_document,hr_recruitment.group_hr_recruitment_user,1,1,0,0
+theboss_hr_document_employee_manager,HR Document - Employee Officer,model_hr_document,hr.group_hr_manager,1,1,1,1
+theboss_hr_document_employee_officer,HR Document - Employee Officer,model_hr_document,hr.group_hr_user,1,1,0,0

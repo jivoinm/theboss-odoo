@@ -1,0 +1,112 @@
+<odoo>
+    <data>
+    <!-- templates -->
+		  <record id="employee_work_contract" model="hr.document">
+			<field name="name">Contract individual de minca CIM</field>
+			<field name="model_id" ref="hr.model_hr_employee" />
+			<field name="body_html"><![CDATA[
+<h4 dir="ltr">S.C. BEESPEED AUTOMATIZARI S.R.L.</h4>
+<p dir="ltr">C.U.I. J35/3508/1994</p>
+<p dir="ltr">C.I.F. RO6725121</p>
+<p dir="ltr">Adresa: Republicii nr.9, et-1-2</p>
+<h2 dir="ltr" style="text-align: center;">C O N T R A C T &nbsp;&nbsp;I N D I V I D U A L &nbsp;&nbsp;D E &nbsp;&nbsp;M U N C Ă</h2>
+<p dir="ltr">&icirc;ncheiat şi &icirc;nregistrat sub nr. &hellip;&hellip;....&hellip;/&hellip;&hellip;.&hellip;&hellip;&hellip;&hellip;..&icirc;n registrul general de evidenţă a salariaţilor</p>
+<p dir="ltr">A. Părţile contractului</p>
+<p dir="ltr">Angajator - Persoana juridică S.C. BEESPEED AUTOMATIZARI S.R.L., cu sediul &icirc;n CHISODA, Modul 3, Incontro 07, DN59, Km 8+550m st&acirc;nga, SAD3, judeţul Timiş, &icirc;nregistrată la registrul comerţului Timisoara, sub numărul J35/3508/1994, telefon 0356/710540, reprezentată legal prin dl. Tudoran Constantin, &icirc;n calitate de Administrator, prin delegat dl. Sever Scridon &ndash; Manager Proiecte Externe, responsabil pentru punctul de lucru: Timişoara Engineering Center</p>
+<p dir="ltr">şi</p>
+<p dir="ltr">salariatul &ndash; domnul / doamna ${object.display_name or "-"}, domiciliat(ă) &icirc;n localitatea, ${object.address_home_id.city or "-"} str. ${object.address_home_id.street or "-"} nr. ${object.address_home_id.add_number or "-"}, judeţul ${object.address_home_id.state_id.name or "-"}, posesor a buletinului / cărţii de identitate / paşaportului seria ${object.identification_id or "-"}, nr. ${object.passport_id or "-"}, eliberat / eliberată de ${object.emit_by or "-"} la data de ${object.emit_on or "-"}, CNP ${object.ssnid_init or "-"}, autorizaţie de munca / permis de şedere in scop de munca seria &hellip;&hellip;..&hellip; nr. ${object.visa_no or "-"} din data ${object.visa_expire or "-"}, am &icirc;ncheiat prezentul contract individual de muncă &icirc;n următoarele condiţii asupra cărora am convenit:</p>
+<p dir="ltr">B. &nbsp;Obiectul contractului:&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</p>
+<p dir="ltr">C. &nbsp;Durata contractului:</p>
+<p dir="ltr">a) nedeterminată, salariatul........&hellip;&hellip;&hellip;............................. urm&acirc;nd să &icirc;nceapă activitatea la data de .......................;</p>
+<p dir="ltr">b) determinată, de ..............luni, pe perioada cuprinsă &icirc;ntre data de .....&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;............. şi data de .................... / pe perioada suspendării contractului individual de muncă al titularului de post.</p>
+<p dir="ltr">D. Locul de muncă</p>
+<p dir="ltr">1. Activitatea se desfăşoară la (secţie/atelier/birou/serviciu/compartiment, etc.) &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip; &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;din punct de lucru &nbsp;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.. .</p>
+<p dir="ltr">2. &Icirc;n lipsa unui loc de muncă fix salariatul va desfăşura activitatea astfel:&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;..</p>
+<p dir="ltr">E. Felul muncii</p>
+<p dir="ltr">Funcţia / meseria &hellip;&hellip;..&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;............................... conform Clasificării Ocupaţiilor din Rom&acirc;nia;</p>
+<p dir="ltr">F. Atribuţiile postului</p>
+<p dir="ltr">Atribuţiile postului sunt prevăzute &icirc;n fişa postului, anexă la contractul individual de muncă.</p>
+<p dir="ltr">F1. Criteriile de evaluare a activităţii profesionale a salariatului:</p>
+<p dir="ltr">Criteriile de evaluare sunt prevăzute &icirc;n regulamentul intern.</p>
+<p dir="ltr">G. Condiţii de muncă:</p>
+<p dir="ltr">1. Activitatea se desfăşoară &icirc;n conformitate cu prevederile Legii nr. 31/1991 privind stabilirea duratei timpului de munca sub 8 ore pe zi pentru salariaţii care lucrează in condiţii deosebite &ndash; vătămătoare, grele sau periculoase.</p>
+<p dir="ltr">2. Activitatea prestată se desfăşoară &icirc;n condiţii normale/deosebite/speciale de muncă, potrivit Legii nr. 263/20100 privind sistemul unitar de pensii publice, cu modificările şi completările ulterioare</p>
+<p dir="ltr">H. Durata muncii:</p>
+<p dir="ltr">1. &nbsp;O normă &icirc;ntreagă, durata timpului de lucru fiind de .......... ore/zi &hellip;&hellip;&hellip;.. ore/săptăm&acirc;nă.</p>
+<p dir="ltr">a). Repartizarea programului de lucru se face după cum urmează &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;. (ore zi/ore noapte/inegal);</p>
+<p dir="ltr">b). Programul de lucru se poate modifica &icirc;n condiţiile regulamentului intern/contractului colectiv de muncă aplicabil.</p>
+<p dir="ltr">2. O fracţiune de normă de &hellip;&hellip;&hellip;&hellip;&hellip;. ore/zi , &nbsp;ore/săptăm&acirc;nă&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.</p>
+<p dir="ltr">a). Repartizarea programului de lucru se face după cum urmează:&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.(ore zi/ore noapte);</p>
+<p dir="ltr">b). Programul de lucru se poate modifica &icirc;n condiţiile regulamentului intern/contractului colectiv de muncă aplicabil.</p>
+<p dir="ltr">c). Nu se vor efectua ore suplimentare cu excepţia cazurilor de forţă majoră sau pentru alte lucrări urgente destinate prevenirii producerii unor accidente sau &icirc;nlăturării consecinţelor acestora.</p>
+<p dir="ltr">I. Concediul</p>
+<p dir="ltr">Durata concediului anual de odihnă este de .......... zile lucrătoare, &icirc;n raport cu durata muncii (normă &icirc;ntreagă, fracţiune de normă).</p>
+<p dir="ltr">De asemenea, beneficiază de un concediu suplimentar de &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip; .</p>
+<p dir="ltr">J. Salarizare:</p>
+<p dir="ltr">1. Salariul de bază lunar brut: .....&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.................... lei;</p>
+<p dir="ltr">2. Alte elemente constitutive:</p>
+<p dir="ltr">a). sporuri ............................&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;;</p>
+<p dir="ltr">b). indemnizaţii &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;..&hellip;;</p>
+<p dir="ltr">b1). Prestaţii suplimentare in bani &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip; .</p>
+<p dir="ltr">b2). Modalitatea prestaţiilor suplimentare in natura &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;..&nbsp;.</p>
+<p dir="ltr">c). alte adaosuri&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.;</p>
+<p dir="ltr">3. Orele suplimentare prestate &icirc;n afara programului normal de lucru sau &icirc;n zilele &icirc;n care nu se lucrează ori &icirc;n zilele de sărbători legale se compensează cu ore libere plătite sau se plătesc cu un spor la salariu, conform contractului colectiv de muncă aplicabil sau Legii nr. 53/2003 - Codul muncii. &nbsp;</p>
+<p dir="ltr">4. Data/datele la care se plăteşte salariul este/sunt ......................... .</p>
+<p dir="ltr">&nbsp;</p>
+<p dir="ltr">K. Drepturi şi obligaţii ale părţilor privind sănătatea şi securitatea &icirc;n muncă:</p>
+<p dir="ltr">a). echipament individual de protecţie .......................................;</p>
+<p dir="ltr">b). echipament individual de lucru .............................................;</p>
+<p dir="ltr">c). Materiale igienico-sanitare ................................................&hellip;;</p>
+<p dir="ltr">d). alimentaţie de protecţie .....................................&hellip;;</p>
+<p dir="ltr">e). alte drepturi şi obligaţii privind sănătatea şi securitatea &icirc;n muncă ......................................... .</p>
+<p dir="ltr">L. Alte clauze: &nbsp;</p>
+<p dir="ltr">a). perioada de proba este de &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;zile calendaristice;</p>
+<p dir="ltr">b). perioada de preaviz &icirc;n cazul concedierii este de &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;zile lucrătoare, conform Legii nr. 53/2003 - Codul muncii sau contractului colectiv de muncă;</p>
+<p dir="ltr">c). perioada de preaviz &icirc;n cazul demisiei este de &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.&hellip;zile lucrătoare, conform Legii nr. 53/2003 - Codul Muncii, cu modificările si completările ulterioare sau Contractului colectiv de muncă aplicabil;</p>
+<p dir="ltr">d). &icirc;n cazul &icirc;n care salariatul urmează să-şi desfăşoare activitatea &icirc;n străinătate, informaţiile prevăzute la art.18 alin.(1) din Legea nr. 53/2003 - Codul muncii se vor regăsi şi &icirc;n contractul individual de muncă;</p>
+<p dir="ltr">e). alte clauze.</p>
+<p dir="ltr">M. Drepturi şi obligaţii generale ale părţilor:</p>
+<p dir="ltr">1. Salariatul are, &icirc;n principal, următoarele drepturi:</p>
+<p dir="ltr">a) dreptul la salarizare pentru munca depusă;</p>
+<p dir="ltr">b) dreptul la repaus zilnic şi săptăm&acirc;nal;</p>
+<p dir="ltr">c) dreptul la concediu de odihnă anual;</p>
+<p dir="ltr">d) dreptul la egalitate de şanse şi de tratament;</p>
+<p dir="ltr">e) dreptul la securitate şi sănătate &icirc;n muncă;</p>
+<p dir="ltr">f) dreptul la acces la formare profesională.</p>
+<p dir="ltr">2. Salariatului &icirc;i revin, &icirc;n principal, următoarele obligaţii:</p>
+<p dir="ltr">a) obligaţia de a realiza norma de muncă sau, după caz, de a &icirc;ndeplini atribuţiile ce &icirc;i revin conform fişei postului;</p>
+<p dir="ltr">b) obligaţia de a respecta disciplina muncii;</p>
+<p dir="ltr">c) obligaţia de fidelitate faţă de angajator &icirc;n executarea atribuţiilor de serviciu;</p>
+<p dir="ltr">d) obligaţia de a respecta măsurile de securitate şi sănătate a muncii &icirc;n unitate;</p>
+<p dir="ltr">e) obligaţia de a respecta secretul de serviciu.</p>
+<p dir="ltr">3. Angajatorul are, &icirc;n principal, următoarele drepturi:</p>
+<p dir="ltr">a) să dea dispoziţii cu caracter obligatoriu pentru salariat, sub rezerva legalităţii lor;</p>
+<p dir="ltr">b) să exercite controlul asupra modului de &icirc;ndeplinire a sarcinilor de serviciu;</p>
+<p dir="ltr">c) să constate săv&acirc;rşirea abaterilor disciplinare şi să aplice sancţiunile corespunzătoare, potrivit legii, contractului colectiv de muncă aplicabil şi regulamentului intern.</p>
+<p dir="ltr">d) sa stabilească obiectivele de performanta individuala a salariatului;</p>
+<p dir="ltr">4. Angajatorului &icirc;n revin, &icirc;n principal, următoarele obligaţii:</p>
+<p dir="ltr">a) să &icirc;nm&acirc;neze salariatului un exemplar din contractul individual de muncă, anterior &icirc;nceperii activităţii;</p>
+<p dir="ltr">a1) să acorde salariatului toate drepturile ce decurg din contractele individuale de muncă, din contractul colectiv de muncă aplicabil şi din lege;</p>
+<p dir="ltr">b) să asigure permanent condiţiile tehnice şi organizatorice avute &icirc;n vedere la elaborarea normelor de muncă şi condiţiile corespunzătoare de muncă;</p>
+<p dir="ltr">c) să informeze salariatul asupra condiţiilor de muncă şi asupra elementelor care privesc desfăşurarea relaţiilor de muncă;</p>
+<p dir="ltr">d) să elibereze, la cerere, un document care sa ateste calitatea de salariat a solicitantului, respectiv activitatea desfăşurată de acesta, durata activităţii, salariul, vechimea in munca, in meserie si specialitate;</p>
+<p dir="ltr">e) să asigure confidenţialitatea datelor cu caracter personal ale salariatului;</p>
+<p dir="ltr">N. Dispoziţii finale</p>
+<p dir="ltr">Prevederile prezentului contract individual de muncă se completează cu dispoziţiile Legii nr. 53/2003 - Codul Muncii şi ale contractului colectiv de muncă aplicabil &icirc;ncheiat la nivelul angajatorului/grupului de angajatori/ramurii/naţional, &icirc;nregistrat sub nr. &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;./&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;..&hellip;&hellip; la Inspectoratul Teritorial de Munca a judeţului/municipiului &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.&hellip;/Ministerul Muncii şi Solidarităţii sociale.</p>
+<p dir="ltr">Orice modificare privind clauzele contractuale &icirc;n timpul executării contractului individual de muncă impune &icirc;ncheierea unui act adiţional la contract, conform dispoziţiilor legale, cu excepţia situaţiilor in care o asemenea modificare este prevăzuta in mod expres de lege.</p>
+<p dir="ltr">Prezentul contract individual de muncă s-a &icirc;ncheiat &icirc;n două exemplare, c&acirc;te unul pentru fiecare parte.</p>
+<p dir="ltr">O. Conflictele &icirc;n legătură cu &icirc;ncheierea, executarea, modificarea, suspendarea sau &icirc;ncetarea prezentului contract individual de muncă sunt soluţionate de către instanţa judecătorească competentă material şi teritorial, potrivit legii.</p>
+<p dir="ltr">Angajator, &nbsp;&nbsp;&nbsp;&nbsp;Salariat,</p>
+<p dir="ltr">&hellip;&hellip;&hellip;&hellip;.&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.&hellip; &nbsp;&nbsp;&nbsp;Semnătura&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</p>
+<p dir="ltr">&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;Data &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.</p>
+<p dir="ltr">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+<p dir="ltr">&nbsp;&nbsp;&nbsp;Reprezentant legal, &nbsp;&nbsp;</p>
+<p dir="ltr">&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.&hellip;.</p>
+<p dir="ltr">Pe data &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;. prezentul contract &icirc;ncetează in temeiul art. &hellip;&hellip;&hellip;&hellip;&hellip;.. din Legea nr. 53-2003 - Codul Muncii, cu modificările si completările ulterioare&nbsp;&icirc;n urma &icirc;ndeplinirii procedurii legale.</p>
+<p dir="ltr">Angajator,</p>
+<p dir="ltr">&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</p>
+]]>
+			</field>
+		</record>
+    </data>
+</odoo>
