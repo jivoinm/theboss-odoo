@@ -138,8 +138,8 @@
                     <field name="odometer" invisible="1"/>
                     <field name="odometer_unit" invisible="1"/>
                     <field name="purchaser_id" />
-                    <field name="inv_ref" invisible="1"/>
-                    <field name="vendor_id" invisible="1"/>
+                    <field name="inv_ref"/>
+                    <field name="vendor_id"/>
                     <field name="liter" sum="Litri alimentari"/>
                     <field name="price_per_liter" invisible="1"/>
                     <field name="amount" sum="Price"/>
@@ -159,8 +159,8 @@
                   <field name="odometer" invisible="1"/>
                   <field name="odometer_unit" invisible="1"/>
                   <field name="purchaser_id" />
-                  <field name="inv_ref" invisible="1"/>
-                  <field name="vendor_id" invisible="1"/>
+                  <field name="inv_ref"/>
+                  <field name="vendor_id"/>
                   <field name="liter" sum="Total Litri"/>
                   <field name="price_per_liter" invisible="1"/>
                   <field name="amount" sum="Price"/>
@@ -338,6 +338,7 @@
                           <field name="consum_comb"/>
                           <field name="km_echiv_sporuri" attrs="{'readonly': True}"/>
                           <field name="km_echiv_total" attrs="{'readonly': True}"/>
+                          <field name="consum" attrs="{'readonly': True}"/>
                           <field name="driver_cost" class="oe_subtotal_footer_separator"/>
                       </group>
                   </group>
@@ -395,15 +396,14 @@
                 <field name="date"/>
                 <field name="vehicle_id"/>
                 <field name="driver_id"/>
-                <field name="gm"/>
-                <field name="gm_m3"/>
-                <field name="fuel_total"/>
-                <field name="index_km_total"/>
-                <field name="km_echiv_total"/>
-                <field name="consum_comb"/>
-                <field name="consum_comb_diference"/>
-                <field name="km_echiv_parcurs"/>
-                <field name="km_echiv_incarcat"/>
+                <field name="fuel_total" sum="Total litri"/>
+                <field name="consum_comb" sum="Total Consum normat de raportat"/>
+                <field name="gm" sum="Total sarcina"/>
+                <field name="gm_m3" sum="Total m3"/>
+                <field name="index_km_total" sum="Total KM parcursi"/>
+                <field name="km_echiv_parcurs" sum="Total KM Parcursi"/>
+                <field name="km_echiv_total" sum="Total KM Echiv." invisible="1"/>
+                <field name="consum" avg="Consum"/>
             </tree>
         </field>
     </record>

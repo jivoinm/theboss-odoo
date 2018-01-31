@@ -362,11 +362,11 @@ class foaie_de_parcurs(models.Model):
     driver_cost = fields.Float(compute="_compute_driver_cost", string="Cost sofer")
     km_de_specificat = fields.Float(compute="_compute_unreported_km")
 
-    km_echiv_parcurs = fields.Float(string="Km echiv. parcurs", compute="_compute_echiv")
-    km_echiv_incarcat = fields.Float(string="Km echiv. incarcat", compute="_compute_echiv")
-    km_echiv_gol = fields.Float(string="Km echiv. gol", compute="_compute_echiv")
+    km_echiv_parcurs = fields.Float(string="Km echiv. parcurs", strore=True, compute="_compute_echiv")
+    km_echiv_incarcat = fields.Float(string="Km echiv. incarcat", strore=True, compute="_compute_echiv")
+    km_echiv_gol = fields.Float(string="Km echiv. gol", strore=True, compute="_compute_echiv")
     km_echiv_sporuri = fields.Float(string="Km echiv. sporuri")
-    km_echiv_total = fields.Float(string="Total km echiv.", compute='_compute_km_echiv_total')
+    km_echiv_total = fields.Float(string="Total km echiv.", strore=True, compute='_compute_km_echiv_total')
     
     nr_porniri_opriri = fields.Integer(string="Nr porniri/opriri")
     timp_local = fields.Float(string="Localitate")
@@ -401,6 +401,18 @@ class foaie_de_parcurs(models.Model):
     km_urbani_alte_echiv = fields.Float()
 
     total_km_echiv = fields.Float('Total Km echivalenti')
+    consum = fields.Float('Consum/100km', 
+    store=True, 
+    compute='_compute_consum',
+    group_operator='avg',
+    method=True
+    )
+
+    @api.depends('fuel_total')
+    def _compute_consum(self):
+        for record in self:
+            if record.index_km_total and record.fuel_total:
+                record.consum = 100 * record.fuel_total / record.index_km_total
    
     @api.depends('km_echiv_parcurs')
     def _compute_km_echiv_total(self):
@@ -597,19 +609,23 @@ class ReportConsum(models.Model):
     def _select(self):
         select_str = """
 select fleet_vehicle.id, fleet_vehicle.name,fleet_vehicle_cost.date, 
-COALESCE(fleet_vehicle_log_fuel.liter,0) + COALESCE(fuel_in.liter,0) as liters_fill_in, 
-fuel_out.liter as liters_fill_out,
-fleet_vehicle_log_oil.liter as liters_oil
+sum(COALESCE(fleet_vehicle_log_fuel.liter,0) + COALESCE(fuel_in.liter,0)) as liters_fill_in, 
+(select sum(fleet_fpz_tank_log_fuel.liter) from fleet_fpz_tank_log_fuel 
+inner join fleet_vehicle_cost cost1 on cost1.id = fleet_fpz_tank_log_fuel.cost_id
+where fleet_fpz_tank_log_fuel.from_vehicle_id = fleet_vehicle.id and cost1.date = fleet_vehicle_cost.date
+group by fleet_fpz_tank_log_fuel.from_vehicle_id
+) as liters_fill_out,
+sum(fleet_vehicle_log_oil.liter) as liters_oil
 from fleet_vehicle
 inner join fleet_vehicle_cost on fleet_vehicle.id = fleet_vehicle_cost.vehicle_id
 inner join fleet_vehicle_model on fleet_vehicle.model_id = fleet_vehicle_model.id
 inner join fleet_vehicle_model_brand on fleet_vehicle_model.brand_id = fleet_vehicle_model_brand.id
 left outer join fleet_vehicle_log_oil on fleet_vehicle_cost.id = fleet_vehicle_log_oil.cost_id
 left outer join fleet_vehicle_log_fuel on fleet_vehicle_cost.id = fleet_vehicle_log_fuel.cost_id
-left outer join fleet_fpz_tank_log_fuel fuel_out on fleet_vehicle.id = fuel_out.from_vehicle_id
 left outer join fleet_fpz_tank_log_fuel fuel_in on fleet_vehicle.id = fleet_vehicle_cost.vehicle_id and fuel_in.cost_id = fleet_vehicle_cost.id
 where fleet_vehicle_cost.date is not null
-        """
+group by fleet_vehicle.id, fleet_vehicle.name, fleet_vehicle_cost.date
+"""
         return select_str
 
     def init(self):
