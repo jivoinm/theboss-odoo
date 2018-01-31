@@ -7,7 +7,7 @@
       <field name="view_mode">pivot</field>
       <field name="view_id"></field>  <!-- force empty -->
       <field name="state">code</field>
-      <field name="code">action = self.custom_funct_date(cr, uid, context=context)</field>
+      <!-- <field name="code">action = self.custom_funct_date(cr, uid, context=context)</field> -->
       <field eval="True" name="condition"/>
       <field name="help" type="html">
         <p>
