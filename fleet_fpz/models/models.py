@@ -570,6 +570,10 @@ class foaie_de_parcurs(models.Model):
         vals['numar'] = self.env['ir.sequence'].next_by_code('fleet_fpz.foaie_de_parcurs_nr')
         return super(foaie_de_parcurs, self).create(vals)
 
+    # def read_group(self, cr, uid, domain, fields, groupby, offset=0, limit=None, context=None, orderby=False, lazy=True):
+    #     if 'consum' in fields:
+    #         #fields.remove('consum')
+    #     return super(foaie_de_parcurs, self).read_group(cr, uid, domain, fields, groupby, offset, limit=limit, context=context, orderby=orderby, lazy=True)
 
 class ReportConsum(models.Model):
     """ Fuel Consumption report
@@ -608,23 +612,27 @@ class ReportConsum(models.Model):
 
     def _select(self):
         select_str = """
-select fleet_vehicle.id, fleet_vehicle.name,fleet_vehicle_cost.date, 
-sum(COALESCE(fleet_vehicle_log_fuel.liter,0) + COALESCE(fuel_in.liter,0)) as liters_fill_in, 
-(select sum(fleet_fpz_tank_log_fuel.liter) from fleet_fpz_tank_log_fuel 
-inner join fleet_vehicle_cost cost1 on cost1.id = fleet_fpz_tank_log_fuel.cost_id
-where fleet_fpz_tank_log_fuel.from_vehicle_id = fleet_vehicle.id and cost1.date = fleet_vehicle_cost.date
-group by fleet_fpz_tank_log_fuel.from_vehicle_id
-) as liters_fill_out,
+select vehicle_in.id, vehicle_in.name,cost_in.date, 
+sum(COALESCE(fuel_in.liter,0) + COALESCE(fuel_in_from_tank.liter, 0)) as liters_fill_in, 
+0 as liters_fill_out,
 sum(fleet_vehicle_log_oil.liter) as liters_oil
-from fleet_vehicle
-inner join fleet_vehicle_cost on fleet_vehicle.id = fleet_vehicle_cost.vehicle_id
-inner join fleet_vehicle_model on fleet_vehicle.model_id = fleet_vehicle_model.id
-inner join fleet_vehicle_model_brand on fleet_vehicle_model.brand_id = fleet_vehicle_model_brand.id
-left outer join fleet_vehicle_log_oil on fleet_vehicle_cost.id = fleet_vehicle_log_oil.cost_id
-left outer join fleet_vehicle_log_fuel on fleet_vehicle_cost.id = fleet_vehicle_log_fuel.cost_id
-left outer join fleet_fpz_tank_log_fuel fuel_in on fleet_vehicle.id = fleet_vehicle_cost.vehicle_id and fuel_in.cost_id = fleet_vehicle_cost.id
-where fleet_vehicle_cost.date is not null
-group by fleet_vehicle.id, fleet_vehicle.name, fleet_vehicle_cost.date
+from fleet_vehicle_cost cost_in
+join fleet_vehicle vehicle_in on vehicle_in.id = cost_in.vehicle_id
+left join fleet_vehicle_log_fuel fuel_in on fuel_in.cost_id = cost_in.id
+left join fleet_vehicle_log_oil on cost_in.id = fleet_vehicle_log_oil.cost_id
+left join fleet_fpz_tank_log_fuel fuel_in_from_tank on fuel_in_from_tank.cost_id = cost_in.id
+where cost_in.date is not null
+group by vehicle_in.id, vehicle_in.name, cost_in.date
+union all
+select vehicle_out.id, vehicle_out.name, cost_out.date, 
+0 as liters_fill_in, 
+sum(COALESCE(fuel_out.liter,0)) as liters_fill_out,
+0 as liters_oil
+from fleet_vehicle_cost cost_out
+join fleet_fpz_tank_log_fuel fuel_out on fuel_out.cost_id = cost_out.id
+join fleet_vehicle vehicle_out on vehicle_out.id = fuel_out.from_vehicle_id
+where cost_out.date is not null
+group by vehicle_out.id, vehicle_out.name, cost_out.date
 """
         return select_str
 

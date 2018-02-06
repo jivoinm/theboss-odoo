@@ -401,9 +401,9 @@
                 <field name="gm" sum="Total sarcina"/>
                 <field name="gm_m3" sum="Total m3"/>
                 <field name="index_km_total" sum="Total KM parcursi"/>
-                <field name="km_echiv_parcurs" sum="Total KM Parcursi"/>
+                <field name="km_echiv_parcurs" sum="Total KM Echiv."/>
                 <field name="km_echiv_total" sum="Total KM Echiv." invisible="1"/>
-                <field name="consum" avg="Consum"/>
+                <field name="consum" avg="Total consum mediu"/>
             </tree>
         </field>
     </record>

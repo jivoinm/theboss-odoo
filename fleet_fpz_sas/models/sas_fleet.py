@@ -292,8 +292,7 @@ class SasSettings(models.TransientModel):
             'timp_local': self.sec_to_hours(local_time),
             'timp_inter': self.sec_to_hours(inter_time),
             'total_work_time': self.sec_to_hours(total_work_time),
-            'timp_inc_desc': self.sec_to_hours(timp_inc_desc),
-            'fuel_pump': data['fueled'] if 'fueled' in data else 0
+            'timp_inc_desc': self.sec_to_hours(timp_inc_desc)
             })
 
     def get_road_categories(self, road_categories):
