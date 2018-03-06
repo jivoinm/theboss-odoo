@@ -2,7 +2,7 @@
     <data>
     <!-- templates -->
 		  <record id="employee_work_contract" model="hr.document">
-			<field name="name">Contract individual de minca CIM</field>
+			<field name="name">Contract individual de munca CIM</field>
 			<field name="model_id" ref="hr.model_hr_employee" />
 			<field name="body_html"><![CDATA[
 <h4 dir="ltr">S.C. BEESPEED AUTOMATIZARI S.R.L.</h4>

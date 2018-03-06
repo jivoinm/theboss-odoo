@@ -396,14 +396,15 @@ class HRDocument(models.Model):
             
             result = base64.b64encode(pdf_content)
             Attachment = self.env['ir.attachment'] 
-            file_name = doc.name + '_' +  datetime.datetime.now().strftime('%Y_%m_%d_%f')
-            attachment_data = {
-                'name': file_name,
-                'datas_fname': file_name + '.pdf',
-                'datas': result,
-                'type': 'binary',
-                'res_model': model_name,
-                'res_id': model.id,
-            }
-            attachment_ids.append(Attachment.create(attachment_data).id)
+            if Attachment.search_count([('res_id','=', model.id), ('name','=', doc.name), ('res_model', '=', model_name)]) == 0:
+                file_name = doc.name
+                attachment_data = {
+                    'name': file_name,
+                    'datas_fname': file_name + '.pdf',
+                    'datas': result,
+                    'type': 'binary',
+                    'res_model': model_name,
+                    'res_id': model.id,
+                }
+                attachment_ids.append(Attachment.create(attachment_data).id)
         return attachment_ids

@@ -11,8 +11,7 @@
                         class="oe_stat_button"
                         icon="fa-gears"
                         type="object"
-                        help="Generate template documents"
-                    >
+                        help="Generate template documents">
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_text">HR doc</span>
                         </div>

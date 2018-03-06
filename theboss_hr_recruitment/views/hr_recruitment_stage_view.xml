@@ -32,8 +32,7 @@
                     context="{'survey_id': stage_interview_id}"
                     attrs="{'invisible':[('stage_interview_id','=',False)]}">
                     <div class="o_field_widget o_stat_info">
-                        <span class="o_stat_text">Start</span>
-                        <field name="stage_interview_id" class="o_stat_text"/>
+                        <span class="o_stat_text">Start Interview</span>
                     </div>
                 </button>
                 <button name="action_print_survey"
@@ -45,16 +44,6 @@
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_text">Sore</span>
                         <field name="score" class="o_stat_text"/>
-                    </div>
-                </button>
-                <button name="action_generate_documents"
-                    class="oe_stat_button"
-                    icon="fa-gears"
-                    type="object"
-                    help="Generate template documents"
-                   >
-                    <div class="o_field_widget o_stat_info">
-                        <span class="o_stat_text">HR doc</span>
                     </div>
                 </button>
             </xpath>
