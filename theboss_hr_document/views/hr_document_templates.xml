@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Assets for reports -->
+    <template id="minimal_layout_hr_doc">
+        <t t-raw="'&lt;base href=%s&gt;' % base_url"/>
+        &lt;!DOCTYPE html&gt;
+        <html style="height: 0;">
+            <head>
+                <t t-call-assets="web.report_assets_pdf" t-js="false"/>
+                <t t-call-assets="web.report_assets_common" t-js="false"/>
+                <t t-call-assets="web.report_assets_pdf" t-css="false"/>
+                <t t-call-assets="web.report_assets_common" t-css="false"/>                
+                <meta charset="utf-8"/>
+                <t t-if="subst is True">
+                    <script>
+                        function subst() {
+                            var vars = {};
+                            var x = document.location.search.substring(1).split('&amp;');
+                            for (var i in x) {
+                                var z = x[i].split('=', 2);
+                                vars[z[0]] = unescape(z[1]);
+                            }
+                            var fromPage = document.getElementsByClassName('page');
+                            for(var j = 0; j&lt;fromPage.length; j++)
+                                fromPage[j].textContent = vars['sitepage'];
+                            var toPage = document.getElementsByClassName('topage');
+                            for(var j = 0; j&lt;toPage.length; j++)
+                                toPage[j].textContent = vars['sitepages'];
+
+                            var index = vars['webpage'].split('.', 4)[3]
+                            var header = document.getElementById('minimal_layout_report_headers');
+                            if(header !== null){
+                                var companyHeader = header.children[index];
+                                header.textContent = '';
+                                header.appendChild(companyHeader);
+                            }
+                            var footer = document.getElementById('minimal_layout_report_footers');
+                            if(footer !== null){
+                                var companyFooter = footer.children[index];
+                                footer.textContent = '';
+                                footer.appendChild(companyFooter);
+                            }
+                        }
+                    </script>
+                </t>
+            </head>
+            <body onload="subst()">
+                <t t-raw="body"/>
+            </body>
+        </html>
+    </template>
+</odoo>

@@ -27,6 +27,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/document_template_preview.xml',
+        'views/hr_document_templates.xml',
         'views/hr_document_view.xml',
         'data/data.xml',
     ],
