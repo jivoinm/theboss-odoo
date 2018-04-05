@@ -1,0 +1,5 @@
+li.oe_share_gdoc > a:after {
+    content: url('/theboss_hr/static/src/img/doc.png');
+    position: absolute;
+    right: 5px;
+}
