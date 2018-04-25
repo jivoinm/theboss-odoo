@@ -46,7 +46,7 @@ class culture_recepie(models.Model):
 
 class campaign(models.Model):
     _name = 'agro.campaign'
-    _inherit = ['mail.thread', 'ir.needaction_mixin']
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
 
     name = fields.Char(required=True)
@@ -69,7 +69,8 @@ class campaign(models.Model):
     tasks = fields.Integer(compute='related_tasks')
 
     def related_tasks(self):
-        self.tasks = self.env['project.project'].search_count([('alias_id', '=', self.id), ('alias_model', '=', 'agro.campaign')])
+        #self.tasks = self.env['project.project'].search_count([('alias_id', '=', self.id), ('alias_model', '=', 'agro.campaign')])
+        self.tasks = 0
 
 
     #This function is triggered when the user clicks on the button 'Approved'

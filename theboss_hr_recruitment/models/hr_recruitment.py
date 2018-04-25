@@ -63,7 +63,6 @@ class TheBossStageTask(models.Model):
         ondelete='set null',
     )
 
-
 class TheBossStageInterviewResponse(models.Model):
     _name = 'theboss_hr.stage_interview_response'
     

@@ -1,0 +1,29 @@
+<odoo>
+    <data>
+        <!-- Meeting Types (for interview meetings) -->
+        <record model="calendar.event.type" id="categ_meet_appraisal_interview">
+            <field name="name">Appraisal Interview</field>
+        </record>
+        <!-- Templates applicants -->
+        <record id="email_template_data_appraisal" model="mail.template">
+	        <field name="name">Appraisal Survey - Send Email</field>
+	        <field name="subject">Appraisal template</field>
+	        <field name="email_to">${ctx['email']}</field>
+	        <field name="model_id" ref="theboss_hr_appraisals.model_hr_appraisal"/>
+	        <field name="user_signature" eval="False"/>
+	        <field name="body_html"><![CDATA[
+                <div style="font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); ">
+                    <p>Dear ${ctx.get('employee').name},</p>
+                    % if ctx.get('employee').id == object.employee_id.id:
+                        <p>Please fill out the following survey related to your appraisal.</p>
+                    % else:
+                        <p>Please fill out the following survey related to ${object.employee_id.name}'s appraisal.</p>
+                    % endif
+                    <p><a href="__URL__" data-original-title="" title="">Click here to access the survey.</a></p>
+                    <p>Post your response for the appraisal till : ${object.date_close}</p>
+                    <p>Thank you for your participation.</p>
+                </div>
+            ]]></field>
+	    </record>
+    </data>
+</odoo>
