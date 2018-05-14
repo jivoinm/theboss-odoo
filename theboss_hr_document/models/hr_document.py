@@ -388,10 +388,10 @@ class HRDocument(models.Model):
             IrConfig = self.env['ir.config_parameter'].sudo()
             base_url = IrConfig.get_param('report.url') or IrConfig.get_param('web.base.url')
             html = values['body_html']
-            #layout = self.env['ir.ui.view'].browse(self.env['ir.ui.view'].get_view_id('theboss_hr_document.minimal_layout_hr_doc'))
-            layout = self.env['ir.ui.view'].browse(self.env['ir.ui.view'].get_view_id('web.external_layout'))
+            layout = self.env['ir.ui.view'].browse(self.env['ir.ui.view'].get_view_id('theboss_hr_document.minimal_layout_hr_doc'))
+            #layout = self.env['ir.ui.view'].browse(self.env['ir.ui.view'].get_view_id('web.external_layout'))
             body = layout.render(dict(subst=True, body=html, base_url=base_url))
-            print(body)
+            #print(body)
             pdf_content = report_obj._run_wkhtmltopdf(
                 [body],
             )

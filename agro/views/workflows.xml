@@ -1,6 +1,6 @@
 <odoo>
     <data>
-      <record id="campaign_workflow" model="workflow">
+      <!-- <record id="campaign_workflow" model="workflow">
           <field name="name">campaign.workflow</field>
           <field name="osv">agro.campaign</field>
           <field name="on_create">True</field>
@@ -22,6 +22,6 @@
           <field name="act_from" ref="draft_activity"/>
           <field name="act_to" ref="approved_activity"/>
           <field name="signal">approve_button</field>
-      </record>
+      </record> -->
     </data>
 </odoo>
