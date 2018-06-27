@@ -36,7 +36,7 @@ class fleet_vehicle(models.Model):
 
     oil_logs_count = fields.Integer(compute="_compute_count_all", string='Oil Logs')
     in_stock = fields.Float(string=u'In Stock', compute='_compute_count_all')
-    show_stock = fields.Boolean(compute='_compute_show_stock', store=True)
+    show_stock = fields.Boolean(compute='_compute_show_stock')
 
     def _compute_show_stock(self):
         for record in self:
