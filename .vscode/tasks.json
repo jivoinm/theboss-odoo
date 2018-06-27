@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "taskName": "stop odoo",
+            "label": "stop odoo",
             "type": "shell",
             "command": "docker stop odoo",
             "group": {
@@ -13,7 +13,7 @@
             }
         },
         {
-            "taskName": "start odoo",
+            "label": "start odoo",
             "type": "shell",
             "command": "docker start -a odoo",
             "group": {
@@ -22,7 +22,7 @@
             }
         },
         {
-            "taskName": "rebuild odoo",
+            "label": "rebuild odoo",
             "type": "shell",
             "command": ".~/rebuild-odoo-10.sh",
             "group": {
