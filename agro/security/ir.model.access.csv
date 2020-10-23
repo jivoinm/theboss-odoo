@@ -1,2 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_agro_agro,agro.property,model_agro_property,,1,0,0,0
