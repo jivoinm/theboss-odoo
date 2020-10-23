@@ -1,7 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_survey_hr_user,survey.hr.user,survey.model_survey_survey,hr_recruitment.group_hr_recruitment_user,1,1,1,0
-access_related_hr_user_applicant,survey.hr.user,model_hr_employee_related,hr_recruitment.group_hr_recruitment_user,1,1,1,0
-access_related_hr_user,survey.hr.user,model_hr_employee_related,base.group_user,1,1,1,0
-access_theboss_hr_stage_interview,theboss_hr.stage_interview,model_theboss_hr_stage_interview,hr_recruitment.group_hr_recruitment_user,1,1,1,0
-access_theboss_hr_stage_interview_response,theboss_hr.stage_interview_response,model_theboss_hr_stage_interview_response,hr_recruitment.group_hr_recruitment_user,1,1,1,0
-access_theboss_hr_stage_task,theboss_hr_stage_task,model_theboss_hr_stage_task,hr_recruitment.group_hr_recruitment_user,1,1,1,0

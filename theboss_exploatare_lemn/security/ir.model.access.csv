@@ -1,4 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_exploatare,theboss_exploatare_lemn_theboss_exploatare,model_theboss_exploatare,,1,1,1,1
-access_exploatare_cost_productie,theboss_exploatare_lemn_theboss_cost_productie,model_theboss_cost_productie,,1,1,1,1
-access_exploatare_cost_motorina,theboss_exploatare_lemn_theboss_cost_motorina,model_theboss_cost_motorina,,1,1,1,1

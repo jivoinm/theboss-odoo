@@ -1,7 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_fleet_fpz_fleet_fpz,fleet_fpz_foaie_de_parcurs,model_fleet_fpz_foaie_de_parcurs,,1,1,1,1
-access_fleet_fpz_fleet_fpz_categorie_drum,fleet_fpz_categorie_drum,model_fleet_fpz_categorie_drum,,1,1,1,1
-access_fleet_fpz_fleet_fpz_parcurs_drum,fleet_fpz_parcurs_drum,model_fleet_fpz_parcurs_drum,,1,1,1,1
-access_fleet_fpz_fleet_fpz_parcurs_drum_traseu,fleet_fpz_parcurs_drum_traseu,model_fleet_fpz_parcurs_drum_traseu,,1,1,1,1
-access_fleet_fpz_tank_log_fuel,fleet_fpz_tank_log_fuel,model_fleet_fpz_tank_log_fuel,,1,1,1,1
-access_fleet_fpz_vehicle_log_oil,access_fleet_fpz_vehicle_log_oil,model_fleet_vehicle_log_oil,,1,1,1,1

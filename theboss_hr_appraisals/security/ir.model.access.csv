@@ -1,2 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-theboss_hr_appraisal_group_hr_appraisal_user,theboss_hr_appraisal.group_hr_appraisal_user,theboss_hr_appraisals.model_hr_appraisal,theboss_hr_appraisal,1,1,1,0
