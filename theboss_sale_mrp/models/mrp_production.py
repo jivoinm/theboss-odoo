@@ -2,7 +2,9 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models, _
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
@@ -25,3 +27,12 @@ class MrpProduction(models.Model):
             'res_id': self.sale_order_id,
             }
         return action
+
+class StockRule(models.Model):
+
+    _inherit = ['stock.rule']
+    @api.model
+    def _run_manufacture(self, procurements):
+        for procurement, rule in procurements:
+            _logger.info("StockRule... procurement {0}".format(procurement))
+

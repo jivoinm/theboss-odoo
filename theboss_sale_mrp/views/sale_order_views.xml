@@ -20,12 +20,22 @@
             <xpath expr="//field[@name='payment_term_id']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
-            <xpath expr="//field[@name='payment_term_id']" position="after">
-                <field name="doors" />
-                <field name="door_vendor_id" atts="{'invisible': [('doors', 'in', ['all_made_in_shop'])]}"/>
-                <field name="nr_of_counter_tops" />
-                <field name="nr_of_glass_pieces" />
+            <xpath expr="//group[@name='order_details']" position="after">
+                <group name="general_info">
+                    <field name="doors" />
+                    <field name="door_vendor_id" atts="{'invisible': [('doors', '=', 'all_made_in_shop')]}"/>
+                    <field name="nr_of_counter_tops" />
+                    <field name="nr_of_glass_pieces" />
+                </group>
+                <group name="sale_shipping">
+                    <label for="commitment_date" string="Delivery Date"/>
+                    <div name="commitment_date_div" class="o_row">
+                        <field name="commitment_date"/>
+                        <span name="expected_date_span" class="text-muted">Expected: <field name="expected_date" widget="date"/></span>
+                    </div>
+                </group>
             </xpath>
+
             <xpath expr="//page/field/tree//field[@name='name']" position="after">
                 <field name="upper_door_style_colour" />
                 <field name="door_hardware" />
