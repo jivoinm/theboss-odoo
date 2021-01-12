@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models, _
+from odoo import api, fields, models, exceptions, _
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -9,30 +9,21 @@ _logger = logging.getLogger(__name__)
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
-    sale_order_id = fields.Integer(
-        "Sale Order",
-        compute='_compute_sale_order')
-
-
-    @api.depends('move_dest_ids.sale_line_id.order_id')
-    def _compute_sale_order(self):
-        for record in self:
-            record.sale_order_id = record.move_dest_ids.sale_line_id.order_id
-
-    def action_view_sale_order(self):
-        self.ensure_one()
-        action = {
-            'type': 'ir.actions.act_window',
-            'view_mode': 'form',
-            'res_id': self.sale_order_id,
-            }
-        return action
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order')
+    partner_id = fields.Many2one('res.partner', related='sale_order_id.partner_id', string="Cusromer")
 
 class StockRule(models.Model):
+    _inherit = 'stock.rule'
 
-    _inherit = ['stock.rule']
-    @api.model
-    def _run_manufacture(self, procurements):
-        for procurement, rule in procurements:
-            _logger.info("StockRule... procurement {0}".format(procurement))
-
+    # @api.model
+    # def _prepare_mo_vals(self, product_id, product_qty, product_uom, location_id, name, origin, company_id, values, bom):
+    #     _logger.info("Entering _prepare_mo_vals, {0}, origin:{1}, values:{2}, company_id:{3}".format(self, origin,values, company_id))
+    #     vals = super(StockRule, self)._prepare_mo_vals(product_id, product_qty, product_uom, location_id, name, origin, company_id, values, bom)
+    #     if "orderpoint_id" in values:
+    #         _logger.info("orderpoint_id={0}, group_id:{1}".format(values["orderpoint_id"].id, values["orderpoint_id"].group_id.id))
+    #         sales = self.env['sale.order'].search([('id', '=', values["orderpoint_id"].group_id.sale_order_id)])
+    #         _logger.info("found sale order {0}".format(sales.id))
+    #         if len(sales) > 1:
+    #                 raise exceptions.ValidationError(_('More than 1 sale order found for this group'))
+    #         vals['sale_order_id'] = sales.id
+    #     return vals
