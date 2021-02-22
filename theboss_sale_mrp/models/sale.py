@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models, _
-
+import wdb
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -24,25 +24,21 @@ class SaleOrder(models.Model):
         string='Nr Of Glass Pieces'
     )
 
-    # mrp_production_status = fields.Char(
-    #     string='Mrp Production Status',
-    #     compute='_compute_field_production_status'
-    # )
+    def _action_confirm(self):
+        """ On SO confirmation, some lines should generate a task or a project. """
+        result = super()._action_confirm()
 
-    # @api.depends('state')
-    # def _compute_field_production_status(self):
-    #     for record in self:
-    #         if record.state == "sale":
-    #             mrp_production = record.env['mrp.production'].search([('sale_order_id','=',record.id)], limit=1)
-    #             if mrp_production:
-    #                 record.mrp_production_status = mrp_production[0].state
-    #         else:
-    #             record.mrp_production_status = "N/A"
-
+    @api.depends('order_line.product_id.service_tracking')
+    def _compute_visible_project(self):
+        """ Users should be able to select a project_id on the SO if at least one SO line has a product with its service tracking
+        configured as 'task_in_project' """
+        for order in self:
+            order.visible_project = any(
+                service_tracking == 'task_in_project' for service_tracking in order.order_line.mapped('product_id.service_tracking')
+            )
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
-
 
     upper_door_style_colour = fields.Char(
         string='Upper Door Style & Colour',
@@ -71,3 +67,4 @@ class SaleOrderLine(models.Model):
     counter_top_code = fields.Char(
         string='Counter Top Code',
     )
+
