@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <data>
+        <!-- == Attribute Lines == -->
+        <record id="product_attribute_line_series" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="kitchen" />
+            <field name="attribute_id" ref="product_attribute_series" />
+            <field
+                name="value_ids"
+                eval="[(6,0,[
+            ref('product_attribute_value_s1'),
+            ref('product_attribute_value_s2'),
+            ref('product_attribute_value_s3'),
+            ref('product_attribute_value_s4'),
+            ref('product_attribute_value_s5'),
+            ref('product_attribute_value_s6'),
+            ref('product_attribute_value_s7'),
+            ]
+        )]"
+            />
+        </record>
+        <record id="product_attribute_line_material" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="kitchen" />
+            <field name="attribute_id" ref="product_attribute_material" />
+            <field
+                name="value_ids"
+                eval="[(6,0,[
+            ref('product_attribute_value_m1'),
+            ref('product_attribute_value_m2'),
+            ref('product_attribute_value_m3'),
+            ref('product_attribute_value_m4'),
+            ref('product_attribute_value_m5'),
+            ref('product_attribute_value_m6'),
+            ref('product_attribute_value_m7'),
+            ref('product_attribute_value_m8'),
+            ref('product_attribute_value_m9'),
+            ref('product_attribute_value_m10'),                        
+            ]
+        )]"
+            />
+        </record>
+
+        <record id="product_attribute_line_light_valence" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="kitchen" />
+            <field name="attribute_id" ref="product_attribute_light_valance" />
+            <field
+                name="value_ids"
+                eval="[(6,0,[
+            ref('product_attribute_value_l1'),
+            ref('product_attribute_value_l2'),
+            ref('product_attribute_value_l3'),
+            ]
+        )]"
+            />
+        </record>
+        <record id="product_attribute_line_moulding" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="kitchen" />
+            <field name="attribute_id" ref="product_attribute_moulding" />
+            <field
+                name="value_ids"
+                eval="[(6,0,[
+            ref('product_attribute_value_ml1'),
+            ref('product_attribute_value_ml2'),
+            ref('product_attribute_value_ml3'),
+            ref('product_attribute_value_ml4'),
+            ref('product_attribute_value_ml5'),
+            ref('product_attribute_value_ml6'),
+            ref('product_attribute_value_ml7'),
+            ref('product_attribute_value_ml8'),
+            ref('product_attribute_value_ml9'),
+            ref('product_attribute_value_ml10'),
+            ]
+        )]"
+            />
+        </record>
+
+    </data>
+</odoo>

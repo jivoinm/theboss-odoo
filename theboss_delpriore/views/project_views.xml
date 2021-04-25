@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo><data>
+    <record id="view_theboss_delpriore_project_task_type_inherit_form" model="ir.ui.view">
+        <field name="name">project.task.type.form.theboss.inherit</field>
+        <field name="model">project.task.type</field>
+        <field name="inherit_id" ref="project.task_type_edit"/>
+        <field name="arch" type="xml">
+             <xpath expr="//form/sheet/group" position="after">
+               <group>
+                    <group>
+                        <field name="survey_id"/>
+                        
+                    </group>
+                   
+               </group>
+            </xpath>
+            <!-- <xpath expr="//sheet" position="after">
+                <div class="oe_chatter">
+                    <field name="activity_ids"/>
+                </div>
+            </xpath> -->
+        </field>
+    </record>
+</data></odoo>

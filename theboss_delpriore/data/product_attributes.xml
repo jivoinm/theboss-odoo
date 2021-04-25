@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <data>
+        <!-- == Series == -->
+        <record id="product_attribute_series" model="product.attribute">
+            <field name="name">Series</field>
+            <field name="display_type">select</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="product_attribute_value_s1" model="product.attribute.value">
+            <field name="name">Grey Tandem White Int.</field>
+            <field name="attribute_id" ref="product_attribute_series" />
+        </record>
+        <record id="product_attribute_value_s2" model="product.attribute.value">
+            <field name="name">Dovetail Russian Burch Hard Rock Int.</field>
+            <field name="attribute_id" ref="product_attribute_series" />
+        </record>
+        <record id="product_attribute_value_s3" model="product.attribute.value">
+            <field name="name">Dovetail Solid Maple Hard Rock Int.</field>
+            <field name="attribute_id" ref="product_attribute_series" />
+        </record>
+        <record id="product_attribute_value_s4" model="product.attribute.value">
+            <field name="name">Metabox White Int..</field>
+            <field name="attribute_id" ref="product_attribute_series" />
+        </record>
+        <record id="product_attribute_value_s5" model="product.attribute.value">
+            <field name="name">White Tandem White Int.</field>
+            <field name="attribute_id" ref="product_attribute_series" />
+        </record>
+        <record id="product_attribute_value_s6" model="product.attribute.value">
+            <field name="name">White Tandem Hard Rock Int.</field>
+            <field name="attribute_id" ref="product_attribute_series" />
+        </record>
+        <record id="product_attribute_value_s7" model="product.attribute.value">
+            <field name="name">Custom: Check Other Information</field>
+            <field name="attribute_id" ref="product_attribute_series" />
+        </record>
+
+        <!-- == Material == -->
+        <record id="product_attribute_material" model="product.attribute">
+            <field name="name">Material</field>
+            <field name="display_type">select</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="product_attribute_value_m1" model="product.attribute.value">
+            <field name="name">MDF</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m2" model="product.attribute.value">
+            <field name="name">Maple</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m3" model="product.attribute.value">
+            <field name="name">Oak</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m4" model="product.attribute.value">
+            <field name="name">Matrix</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m5" model="product.attribute.value">
+            <field name="name">Paint Grade Maple</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m6" model="product.attribute.value">
+            <field name="name">Ash</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m7" model="product.attribute.value">
+            <field name="name">Cherry</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m8" model="product.attribute.value">
+            <field name="name">High Gloss</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m9" model="product.attribute.value">
+            <field name="name">Texture Laminate</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+        <record id="product_attribute_value_m10" model="product.attribute.value">
+            <field name="name">Custom: Check Other Information</field>
+            <field name="attribute_id" ref="product_attribute_material" />
+        </record>
+
+        <!-- == Light Valance == -->
+        <record id="product_attribute_light_valance" model="product.attribute">
+            <field name="name">Light Valance</field>
+            <field name="display_type">select</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="product_attribute_value_l1" model="product.attribute.value">
+            <field name="name">Shaker PLV</field>
+            <field name="attribute_id" ref="product_attribute_light_valance" />
+        </record>
+        <record id="product_attribute_value_l2" model="product.attribute.value">
+            <field name="name">PLV With Profile</field>
+            <field name="attribute_id" ref="product_attribute_light_valance" />
+        </record>
+        <record id="product_attribute_value_l3" model="product.attribute.value">
+            <field name="name">Custom: Check Other Information</field>
+            <field name="attribute_id" ref="product_attribute_light_valance" />
+        </record>
+
+        <!-- == Moulding == -->
+        <record id="product_attribute_moulding" model="product.attribute">
+            <field name="name">Moulding</field>
+            <field name="display_type">select</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="product_attribute_value_ml1" model="product.attribute.value">
+            <field name="name">E994</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml2" model="product.attribute.value">
+            <field name="name">BTR549</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml3" model="product.attribute.value">
+            <field name="name">Large Cove</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml4" model="product.attribute.value">
+            <field name="name">Small Cove</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml5" model="product.attribute.value">
+            <field name="name">Sub with E994</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml6" model="product.attribute.value">
+            <field name="name">Sub with BTR549</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml7" model="product.attribute.value">
+            <field name="name">Sub with Large Cove</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml8" model="product.attribute.value">
+            <field name="name">Sub with Small Cove</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml9" model="product.attribute.value">
+            <field name="name">45 Angle</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+        <record id="product_attribute_value_ml10" model="product.attribute.value">
+            <field name="name">Custom: Check Other Information</field>
+            <field name="attribute_id" ref="product_attribute_moulding" />
+        </record>
+
+    </data>
+</odoo>
