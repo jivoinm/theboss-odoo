@@ -19,7 +19,6 @@ from sales order. It adds sales name and sales Reference on production order.
         'views/mrp_production_views.xml',
         'views/sale_order_views.xml',
         'views/project_views.xml',
-        "data/manufacturing_workflow.xml",
         "data/products.xml",
         "data/product_attributes.xml",
         "data/product_attributes_lines.xml",
