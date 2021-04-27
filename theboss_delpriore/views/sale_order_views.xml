@@ -36,7 +36,10 @@
                 <field name="counter_top_colour" />
                 <field name="counter_top_code" />
             </xpath>
-            
+
+            <xpath expr="//field[@name='sale_order_template_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <xpath expr="//page/field/tree//field[@name='product_uom_qty']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>

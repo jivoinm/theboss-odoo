@@ -4,7 +4,6 @@ import logging, datetime
 import json
 import base64
 import lxml.html
-import wdb
 
 _logger = logging.getLogger(__name__)
 

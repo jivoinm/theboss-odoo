@@ -3,7 +3,6 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
-import wdb
 
 class ProjectTask(models.Model):
     _inherit = "project.task"
@@ -14,14 +13,12 @@ class ProjectTask(models.Model):
         )
     
     def _setMOValues(self, mo):
-        #wdb.set_trace()
         for project_task in self:
             super(ProjectTask, self)._setMOValues(mo)
             mo.order_details = project_task.description
 
     def action_get_stage_survey_tree_view(self):
         action = self.env.ref('theboss_delpriore.theboss_hr_stage_survey_view_tree').read()[0]
-        print(action)
         action['context'] = {
             'default_res_model': self._name,
             'default_res_id': self.ids[0]
@@ -30,13 +27,7 @@ class ProjectTask(models.Model):
         action['domain'] = ['&', ('res_model', '=', self._name), ('res_id', 'in', self.ids)]
 
         return action
-    
-    def validateIfMrpCanBeCreated(self, project_task):
-        if project_task.date_deadline and project_task.sale_line_id.order_id.attachment_number > 0:
-            self.show_error_message("You need to set the Project Deadline and Attache Order Files to the Sale Order before creating Manufactoring Order!")
-            return False
-        return True            
-
+   
     @api.onchange('stage_id')
     def check_if_tasks_are_done(self):
         self.ensure_one()

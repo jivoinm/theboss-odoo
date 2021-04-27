@@ -3,7 +3,6 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
-import wdb
 
 class ProjectTask(models.Model):
     _inherit = "project.task"
@@ -16,7 +15,6 @@ class ProjectTask(models.Model):
 
     @api.depends('mrp_production_id.state')
     def _compute_production_state(self):
-        wdb.set_trace()
         for task in self:
             if task.mrp_production_id:
                 task.production_state = dict(self.env['mrp.production'].fields_get(allfields=['state'])['state']['selection'])[task.mrp_production_id.state]
@@ -99,7 +97,6 @@ class ProjectTask(models.Model):
     def action_create_mrp_production(self):
         self.ensure_one()
         action = {}
-        #wdb.set_trace()
         for project_task in self:
             if self.validateIfMrpCanBeCreated(project_task):
                 if project_task.sale_line_id and not project_task.mrp_production_id:

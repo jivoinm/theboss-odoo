@@ -3,7 +3,6 @@
 
 from odoo import api, fields, models, exceptions, _
 import logging
-import wdb
 
 _logger = logging.getLogger(__name__)
 
