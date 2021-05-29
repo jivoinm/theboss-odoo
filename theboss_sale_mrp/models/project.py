@@ -45,6 +45,7 @@ class ProjectTask(models.Model):
                 'taxes_id': False,
                 'sale_ok': False,
                 'purchase_ok': False,
+                #'produce_delay': 4, #days to delay
                 'categ_id': self.env.ref('product.product_category_all').id,
                 'route_ids': [(4, self.env.ref('mrp.route_warehouse0_manufacture').id)]
                 })
@@ -61,7 +62,8 @@ class ProjectTask(models.Model):
         wc_2 = self.get_or_create('mrp.workcenter', 'Work Center 2')
         wc_3 = self.get_or_create('mrp.workcenter', 'Work Center 3')
         wc_4 = self.get_or_create('mrp.workcenter', 'Work Center 4')
-        
+        work_operation_time_minutes = self.env['ir.config_parameter'].get_param('mrp_production_operation_cycle_minutes')
+        work_operation_time_minutes = work_operation_time_minutes if work_operation_time_minutes else 60
         bom_1 = self.env['mrp.bom'].create({
             'product_id': product_to_build.id,
             'product_tmpl_id': product_to_build.product_tmpl_id.id,
@@ -72,10 +74,10 @@ class ProjectTask(models.Model):
                 (0, 0, {'product_id': component_1.id, 'product_qty': 1.00})
             ],
             'operation_ids': [
-                (0, 0, {'sequence': 1, 'name': 'Parts and Doors', 'workcenter_id': wc_1.id}),
-                (0, 0, {'sequence': 2, 'name': 'Cutting', 'workcenter_id': wc_2.id}),
-                (0, 0, {'sequence': 2, 'name': 'Finishing', 'workcenter_id': wc_3.id}),
-                (0, 0, {'sequence': 2, 'name': 'Assembly', 'workcenter_id': wc_4.id}),
+                (0, 0, {'sequence': 1, 'name': 'Parts and Doors', 'workcenter_id': wc_1.id, 'time_cycle_manual': work_operation_time_minutes}),
+                (0, 0, {'sequence': 2, 'name': 'Cutting', 'workcenter_id': wc_2.id, 'time_cycle_manual': work_operation_time_minutes}),
+                (0, 0, {'sequence': 2, 'name': 'Finishing', 'workcenter_id': wc_3.id, 'time_cycle_manual': work_operation_time_minutes}),
+                (0, 0, {'sequence': 2, 'name': 'Assembly', 'workcenter_id': wc_4.id, 'time_cycle_manual': work_operation_time_minutes}),
             ]})
         return product_to_build, bom_1
 
@@ -146,6 +148,6 @@ class ProjectTask(models.Model):
         for project_task in self:
             undone_tasks = self.env['mail.activity'].search([('res_model', '=', 'project.task'), ('res_id', '=',  project_task._origin.id)])
             if undone_tasks:
-               self.show_error_message("There are some unfinished tasks!")
-               project_task.stage_id.id = project_task._origin.stage_id.id
+                project_task.stage_id.id = project_task._origin.stage_id.id
+                self.show_error_message("There are some unfinished tasks!")
         return action

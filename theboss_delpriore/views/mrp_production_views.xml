@@ -20,11 +20,7 @@
             <xpath expr="//page[@name='miscellaneous']" position="after">
                 <page string="Job Details" name="job_files">
                     <group>
-                            <field name="order_details" widget="html"/>
-                            <label for="document_ids"/>
-                            <div name="document_ids">
-                                <field name="document_ids"  widget="one2many_binary" string="Attached Files" class="oe_inline"/>
-                            </div>
+                        <field name="order_details" widget="html"/>
                     </group>
                 </page>
             </xpath>

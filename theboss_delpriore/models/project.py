@@ -3,7 +3,7 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
-
+import datetime
 class ProjectTask(models.Model):
     _inherit = "project.task"
     
@@ -15,7 +15,10 @@ class ProjectTask(models.Model):
     def _setMOValues(self, mo):
         for project_task in self:
             super(ProjectTask, self)._setMOValues(mo)
+            delay = self.env['ir.config_parameter'].get_param('mrp_production_delay_days')
+            delay = delay if delay else 4
             mo.order_details = project_task.description
+            mo.date_planned_start = project_task.date_deadline - datetime.timedelta(days=delay)
 
     def action_get_stage_survey_tree_view(self):
         action = self.env.ref('theboss_delpriore.theboss_hr_stage_survey_view_tree').read()[0]

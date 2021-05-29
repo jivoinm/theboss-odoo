@@ -5,6 +5,10 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="replace">
+                <field name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}" options="{&quot;always_reload&quot;: True}"/>
+            </xpath>
+           
             <xpath expr="//field[@name='validity_date']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
@@ -12,17 +16,18 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//group[@name='order_details']" position="after">
+                <!-- <field name="team_id"  invisible="0"/> -->
                 <group name="general_info">
                     <field name="doors" />
-                    <field name="door_vendor_id" atts="{'invisible': [('doors', '=', 'all_made_in_shop')]}"/>
+                    <field name="door_vendor_id" domain="[('supplier_rank', '=', 1)]" atts="{'invisible': [('doors', '=', 'all_made_in_shop')]}"
+                    context="{'res_partner_search_mode': 'supplier', 'show_address': 0}" />
                     <field name="nr_of_counter_tops" />
                     <field name="nr_of_glass_pieces" />
                 </group>
                 <group name="sale_shipping">
                     <label for="commitment_date" string="Delivery Date"/>
                     <div name="commitment_date_div" class="o_row">
-                        <field name="commitment_date"/>
-                        <span name="expected_date_span" class="text-muted">Expected: <field name="expected_date" widget="date"/></span>
+                        <field name="commitment_date" widget="date"/>
                     </div>
                 </group>
             </xpath>

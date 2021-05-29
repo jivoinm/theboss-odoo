@@ -2,10 +2,29 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models, _
+import wdb
+
+class ResPartner(models.Model):
+    _inherit = 'res.partner'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if self.env.user.sale_team_id:
+                vals['team_id'] = self.env.user.sale_team_id.id
+        partners = super(ResPartner, self).create(vals_list)
+        return partners
+
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
-    
+
+    partner_id = fields.Many2one(
+        'res.partner', string='Customer', readonly=True,
+        states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
+        required=True, change_default=True, index=True, tracking=1,
+        domain=lambda self: ['&', ('team_id', '=', self.env.user.sale_team_id.id if self.env.user.sale_team_id else False), ('customer_rank', '=', 1)])
+
     doors = fields.Selection(
         string='Doors',
         selection=[('na', 'N/A'), ('all_ordered', 'All Ordererd'), ('all_made_in_shop', 'All Made In Shop'), ('some_made_in_shop', 'Some Made In Shop')]
@@ -13,8 +32,8 @@ class SaleOrder(models.Model):
 
     door_vendor_id = fields.Many2one('res.partner', string='Doors Vendor', required=False,
         change_default=True, tracking=True,
-        domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]",
         help="You can find a vendor by its Name, TIN, Email or Internal Reference.")
+
     nr_of_counter_tops = fields.Integer(
         string='Nr Of Counter Tops'
     )
@@ -22,9 +41,15 @@ class SaleOrder(models.Model):
     nr_of_glass_pieces = fields.Integer(
         string='Nr Of Glass Pieces'
     )
-
+    
     attachment_number = fields.Integer(compute='_get_attachment_number', string="Number of Attachments")
     
+    commitment_date = fields.Date('Delivery Date', copy=False,
+                                    states={'done': [('readonly', True)], 'cancel': [('readonly', True)]},
+                                    help="This is the delivery date promised to the customer. "
+                                        "If set, the delivery order will be scheduled based on "
+                                        "this date rather than product lead times.")
+
     def _get_attachment_number(self):
         read_group_res = self.env['ir.attachment'].read_group(
             [('res_model', '=', 'hr.applicant'), ('res_id', 'in', self.ids)],
@@ -45,6 +70,7 @@ class SaleOrder(models.Model):
             order.visible_project = any(
                 service_tracking == 'task_in_project' for service_tracking in order.order_line.mapped('product_id.service_tracking')
             )
+    
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
@@ -84,7 +110,7 @@ class SaleOrderLine(models.Model):
     )
     
     def xstr(self, s):
-        if s is None:
+        if s == False:
             return ''
         return str(s)
     def _timesheet_create_task_prepare_values(self, project):
