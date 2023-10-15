@@ -21,6 +21,6 @@ class MrpProduction(models.Model):
             if mrp.sale_order_id:
                 state = dict(self.env['mrp.production'].fields_get(allfields=['state'])['state']['selection'])[mrp.state]
                 mrp.sale_order_id.sudo().message_post(
-                        body="Manufactoring order %s is in '%s' status and has (%d) work orders done" % (mrp.name, state, mrp.workorder_done_count),
+                        body="Manufactoring order %s is in '%s' status and has (%d) work orders done" % (mrp.name, state, len(mrp.workorder_ids.filtered(lambda w: w.state in ['done']))),
                         author_id=self.env.user.partner_id.id,
                     )
