@@ -4,7 +4,7 @@
 
 {
     'name': 'TheBoss DelPriore Kitchens',
-    'version': '1.0',
+    'version': '17.0',
     'category': 'Hidden',
     'description': """
 Custom setup for DelPriore Kitchens.
