@@ -4,7 +4,7 @@
 
 {
     'name': 'TheBoss Sales and MRP Management',
-    'version': '1.0',
+    'version': '17.0',
     'category': 'Hidden',
     'description': """
 This module provides facility to the user to install mrp and sales modulesat a time.
